@@ -1,0 +1,16 @@
+/media
+/static
+/staticfiles
+info.txt
+__pycache__/
+.env*
+.log
+*pyc
+temp.*
+*temp
+*temp*
+
+.vscode/
+/json_data
+
+/temp_files
