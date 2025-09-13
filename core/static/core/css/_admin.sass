@@ -1,0 +1,99 @@
+@import "./_base.sass"
+
+// Login page
+// Overwrite the default jazzmin app login page styles
+
+// Logo size
+h1 img
+    width: 300px
+
+// Remove logo shadow
+#jazzy-logo img
+    box-shadow: none !important
+
+// many to many field
+.select2-selection__choice__display
+    color: white !important
+
+
+// Fix dashboard responsive
+@media screen and (max-width: 768px)
+
+    .container-fluid > .row > div:nth-child(1)
+        flex-direction: column !important
+
+        h1
+            margin-right: 0 !important
+            padding-right: 0 !important
+
+        ol
+            margin-left: 0 !important
+            padding-left: 0 !important
+
+    .container-fluid > .row > div:nth-child(2)
+        justify-content: flex-start !important
+
+@media screen and (max-width: 500px)
+
+    // Main content
+    .content, .tab-content .card-body
+        padding: 1rem 0 !important
+
+    // Filters
+    #changelist-search > .form-group
+        width: 100% !important
+
+    // Add button
+    .container-fluid > .row > div:nth-child(2)
+        justify-content: center !important
+
+    // Actions components
+    .actions
+        button
+            margin-left: 0 !important
+
+        .select2, > label:nth-child(1)
+            width: 100% !important
+
+        > span
+            margin-left: 0 !important
+            display: block !important
+
+    // Specific inputs
+    input[type="number"]
+        width: 80px !important
+
+// Fix jazzmin sibar overflow 
+.sidebar
+    overflow: hidden !important
+
+// Margin in results number
+.small.quiet
+    margin: 0 10px !important
+
+// margin in list view save button
+[role="status"] input[type="submit"]
+    margin: 0 10px !important
+
+// Custom footer
+@media screen and (max-width: 600px)
+    footer.main-footer
+        text-align: center !important
+
+// Bigger groups and permissions
+.form-group.field-groups, .form-group.field-user_permissions
+    > .row
+        flex-direction: column
+
+        > div
+            max-width: 100% !important
+
+.select2-selection__choice
+
+    > span
+        margin-left: 10px !important
+        color: black !important
+
+// Fix related field drop down width 
+.select2.select2-container
+    width: 100% !important

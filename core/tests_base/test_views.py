@@ -89,5 +89,3 @@ class BaseTestApiViewsMethods(APITestCase, TestAdminBase):
 
         if self.restricted_get:
             self.validate_invalid_method("get")
-
-
