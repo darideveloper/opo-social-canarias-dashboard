@@ -41,6 +41,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 INSTALLED_APPS = [
     # Local apps
     "core",
+    "users",
     # Installed apps
     "corsheaders",
     "rest_framework",
@@ -245,6 +246,11 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
+
+        # Users
+        "users": "fas fa-user",
+        "users.profile": "fas fa-user",
+        "users.TempToken": "fas fa-user",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
