@@ -249,8 +249,8 @@ JAZZMIN_SETTINGS = {
 
         # Users
         "users": "fas fa-user",
-        "users.profile": "fas fa-user",
-        "users.TempToken": "fas fa-user",
+        "users.profile": "fa-solid fa-id-badge",
+        "users.TempToken": "fa-solid fa-user-shield",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
