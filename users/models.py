@@ -6,7 +6,6 @@ class Profile(models.Model):
     user = models.OneToOneField("auth.User", on_delete=models.CASCADE)
     last_pass = models.CharField(max_length=100)
     profile_img = models.ImageField(upload_to='profile/')
-    points = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

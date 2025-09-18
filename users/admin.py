@@ -9,7 +9,6 @@ class ProfileAdmin(admin.ModelAdmin):
         "user",
         "last_pass",
         "profile_img",
-        "points",
         "created_at",
         "updated_at",
     )

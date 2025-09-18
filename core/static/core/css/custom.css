@@ -1,0 +1,84 @@
+h1 img {
+  width: 300px;
+}
+
+#jazzy-logo img {
+  box-shadow: none !important;
+}
+
+.select2-selection__choice__display {
+  color: white !important;
+}
+
+@media screen and (max-width: 768px) {
+  .container-fluid > .row > div:nth-child(1) {
+    flex-direction: column !important;
+  }
+  .container-fluid > .row > div:nth-child(1) h1 {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+  .container-fluid > .row > div:nth-child(1) ol {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+  }
+  .container-fluid > .row > div:nth-child(2) {
+    justify-content: flex-start !important;
+  }
+}
+@media screen and (max-width: 500px) {
+  .content, .tab-content .card-body {
+    padding: 1rem 0 !important;
+  }
+  #changelist-search > .form-group {
+    width: 100% !important;
+  }
+  .container-fluid > .row > div:nth-child(2) {
+    justify-content: center !important;
+  }
+  .actions button {
+    margin-left: 0 !important;
+  }
+  .actions .select2, .actions > label:nth-child(1) {
+    width: 100% !important;
+  }
+  .actions > span {
+    margin-left: 0 !important;
+    display: block !important;
+  }
+  input[type=number] {
+    width: 80px !important;
+  }
+}
+.sidebar {
+  overflow: hidden !important;
+}
+
+.small.quiet {
+  margin: 0 10px !important;
+}
+
+[role=status] input[type=submit] {
+  margin: 0 10px !important;
+}
+
+@media screen and (max-width: 600px) {
+  footer.main-footer {
+    text-align: center !important;
+  }
+}
+.form-group.field-groups > .row, .form-group.field-user_permissions > .row {
+  flex-direction: column;
+}
+.form-group.field-groups > .row > div, .form-group.field-user_permissions > .row > div {
+  max-width: 100% !important;
+}
+
+.select2-selection__choice > span {
+  margin-left: 10px !important;
+  color: black !important;
+}
+
+.select2.select2-container {
+  width: 100% !important;
+}/*# sourceMappingURL=custom.css.map */

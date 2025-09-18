@@ -89,7 +89,7 @@ RUN python -m playwright install
 RUN python manage.py collectstatic --noinput
 RUN python manage.py makemigrations
 RUN python manage.py migrate
-RUN python manage.py apps_loaddata
+# RUN python manage.py apps_loaddata
 
 # Expose the port that Django/Gunicorn will run on
 EXPOSE 80
