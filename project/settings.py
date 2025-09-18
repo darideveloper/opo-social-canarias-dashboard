@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -19,6 +20,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 LANGUAGE_CODE = os.getenv("LANGUAGE_CODE")
 TIME_ZONE = os.getenv("TIME_ZONE")
+ACCESS_TOKEN_LIFETIME = os.getenv("ACCESS_TOKEN_LIFETIME_MINUTES")
+REFRESH_TOKEN_LIFETIME = os.getenv("REFRESH_TOKEN_LIFETIME_HOURS")
 STORAGE_AWS = os.environ.get("STORAGE_AWS") == "True"
 HOST = os.getenv("HOST")
 TEST_HEADLESS = os.getenv("TEST_HEADLESS", "False") == "True"
@@ -27,7 +30,6 @@ BAR_CHART_ENDPOINT = os.getenv("BAR_CHART_ENDPOINT")
 SITE_TITLE = os.getenv("SITE_TITLE")
 SITE_BRAND = os.getenv("SITE_BRAND")
 WELCOME_SIGN = os.getenv("WELCOME_SIGN")
-
 
 print(f"DEBUG: {DEBUG}")
 print(f"STORAGE_AWS: {STORAGE_AWS}")
@@ -386,6 +388,17 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication'
     ),
     'EXCEPTION_HANDLER': 'utils.handlers.custom_exception_handler'
+}
+
+# Setup simple jwt
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=ACCESS_TOKEN_LIFETIME),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=REFRESH_TOKEN_LIFETIME),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
 }
 
 # Global datetime format
