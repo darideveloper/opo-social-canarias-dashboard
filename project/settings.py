@@ -175,7 +175,7 @@ JAZZMIN_SETTINGS = {
     "site_header": "Admin",
     "site_brand": SITE_BRAND,
     "welcome_sign": WELCOME_SIGN,
-    "copyright": "Powered by Software 3S",
+    "copyright": "Powered by Software 3S / DariDev's Team",
 
     # Media
     "site_logo": "core/imgs/favicon.ico",
