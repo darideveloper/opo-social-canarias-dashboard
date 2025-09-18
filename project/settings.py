@@ -17,6 +17,8 @@ print(f"\nEnvironment: {ENV}")
 # Env variables
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
+LANGUAGE_CODE = os.getenv("LANGUAGE_CODE")
+TIME_ZONE = os.getenv("TIME_ZONE")
 STORAGE_AWS = os.environ.get("STORAGE_AWS") == "True"
 HOST = os.getenv("HOST")
 TEST_HEADLESS = os.getenv("TEST_HEADLESS", "False") == "True"
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "jazzmin",
     # Django apps
     "django.contrib.admin",
@@ -150,9 +153,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'es-mx'
+LANGUAGE_CODE = LANGUAGE_CODE
 
-TIME_ZONE = 'America/Mexico_City'
+TIME_ZONE = TIME_ZONE
 
 USE_I18N = True
 
