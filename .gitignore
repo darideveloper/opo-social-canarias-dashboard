@@ -14,3 +14,4 @@ temp.*
 /json_data
 
 /temp_files
+/venv
