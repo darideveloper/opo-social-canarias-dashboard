@@ -5,7 +5,7 @@
 #
 
 # Use Python 3.12 slim image
-FROM mcr.microsoft.com/playwright/python:v1.54.0-noble
+FROM python:3.12-slim
 
 # ENV variables
 
@@ -91,20 +91,12 @@ COPY . /app/
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpq-dev gcc \
-    curl \
-    wget \
-    gnupg \
-    ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
-# Install Playwright browsers
-RUN python -m playwright install
-
 
 # Collect static files and migrate database
 RUN python manage.py collectstatic --noinput
