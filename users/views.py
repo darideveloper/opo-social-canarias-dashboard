@@ -25,8 +25,10 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            message = "Account created successfully."
+            message += " Please check your email to activate your account."
             return Response({
-                "message": "Account created successfully. Please check your email to activate your account.",
+                "message": message,
                 "user": {
                     "username": user.username,
                     "email": user.email,
