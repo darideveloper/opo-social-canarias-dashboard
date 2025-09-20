@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
+from users.views import RegisterView
 
 from users.views import (
     CustomTokenObtainPairView,
@@ -22,6 +23,8 @@ urlpatterns = [
         RedirectView.as_view(url="/admin/"),
         name="login-redirect-admin",
     ),
+    # Auth
+    path('auth/register/', RegisterView.as_view(), name='auth_register'),
     # Drf
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
