@@ -44,5 +44,5 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_active=False,  # ⬅ user can’t log in until activation
         )
 
-        Profile.objects.create(user=user, avatar=avatar, last_password=last_password)
+        Profile.objects.create(user=user, profile_img=avatar, last_pass=last_password)
         return user
