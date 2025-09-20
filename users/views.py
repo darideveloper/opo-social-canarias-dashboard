@@ -32,7 +32,7 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.POST)
         if serializer.is_valid():
-            
+
             # Create data and get profile
             user = serializer.save()
             profile = models.Profile.objects.get(user=user)
@@ -85,5 +85,6 @@ class RegisterView(APIView):
 #         serializer = ActivateAccountSerializer(data={"token": token})
 #         if serializer.is_valid():
 #             serializer.save()
-#             return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
+#             return Response({"message": "Account activated successfully."}, s
+# tatus=status.HTTP_200_OK)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

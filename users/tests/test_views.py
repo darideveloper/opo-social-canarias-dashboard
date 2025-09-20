@@ -1,5 +1,4 @@
 import os
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core import mail
@@ -179,3 +178,31 @@ class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
         token = models.TempToken.objects.get(token=activation_token)
         self.assertEqual(token.type, "sign_up")
         self.assertEqual(token.profile.user.email, self.data["email"])
+
+    def test_no_created_no_email_sent(self):
+        """Test that no email is sent when a user is not created
+        
+        Expects:
+            - No email is sent
+            - The user is not created
+            - The response is a 400 bad request
+        """
+        
+        # Create a user directly in the database
+        User.objects.create_user(
+            username=self.data["username"],
+            password=self.data["password"],
+            email=self.data["email"],
+        )
+
+        # Submit data as a post html form
+        response = self.client.post(
+            self.endpoint,
+            self.data,
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        # Validate no email sent
+        emails_sent = mail.outbox
+        self.assertEqual(len(emails_sent), 0)
