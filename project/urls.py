@@ -25,9 +25,10 @@ urlpatterns = [
     ),
     # Auth
     path('auth/register/', RegisterView.as_view(), name='auth_register'),
-    # Drf
-    path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("auth/token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
+    
+    # Crud endpoints
     path("api/", include(router.urls)),
 ]
 
