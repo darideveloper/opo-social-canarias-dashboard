@@ -15,7 +15,7 @@ from users import models
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)  # Call the parent method to generate tokens
+        data = super().validate(attrs)
 
         # Customize the response structure
         return {"status": "ok", "message": "generated", "data": data}
