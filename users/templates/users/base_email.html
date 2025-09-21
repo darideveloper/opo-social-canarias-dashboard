@@ -413,8 +413,8 @@
             <!-- START MAIN CONTENT AREA -->
             <tr>
               <td class="wrapper">
-                <img src="https://nyxdashboard.s3.amazonaws.com/media/images/hero_gallery_kofi_1.webp"
-                  alt="NyxTrackers banner" class="banner" />
+                <img src="cid:logo"
+                  alt="{{ SITE_BRAND|default:'NyxTrackers' }} logo" class="banner" />
                 <h1>Hi {{name}}</h1>
 
                 {% for text in texts %}
@@ -487,7 +487,7 @@
               </tr>
               <tr>
                 <td class="content-block powered-by">
-                  © 2024 <a href="https://www.nyxtrackers.com/">NyxTrackers</a> All rights reserved.
+                  © 2024 <a href="https://www.nyxtrackers.com/">{{ SITE_BRAND|default:'NyxTrackers' }}</a> All rights reserved.
                 </td>
               </tr>
               <tr>

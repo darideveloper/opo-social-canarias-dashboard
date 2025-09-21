@@ -1,5 +1,3 @@
-import os
-
 import requests
 
 from email.mime.image import MIMEImage
@@ -40,6 +38,7 @@ def render_email(
         "cta_text": cta_text,
         "key_items": key_items,
         "extra_image": extra_image,
+        "SITE_BRAND": settings.SITE_BRAND,
     }
 
     html_message = render_to_string("users/base_email.html", context)
@@ -70,6 +69,8 @@ def send_email(
         key_items (dict): list items like key-value pairs to display in the email
         image_src (str): extra image source to display in the email
     """
+    import os
+    from django.conf import settings
 
     # Get rendered html
     html_message, plain_message = render_email(
@@ -81,6 +82,55 @@ def send_email(
         subject, plain_message, settings.EMAIL_HOST_USER, [to_email]
     )
     message.attach_alternative(html_message, "text/html")
+
+    # Attach logo file - using direct file path approach
+    logo_attached = False
+    try:
+        
+        # Direct path to the logo file
+        logo_file_path = os.path.join(
+            settings.BASE_DIR, 'core', 'static', 'core', 'imgs', 'logo.webp'
+        )
+        
+        if os.path.exists(logo_file_path):
+            with open(logo_file_path, 'rb') as logo_file:
+                logo_data = logo_file.read()
+            
+            # Create MIME image with proper headers
+            logo = MIMEImage(logo_data)
+            logo.add_header('Content-ID', '<logo>')
+            logo.add_header('Content-Disposition', 'inline', filename='logo.webp')
+            
+            message.attach(logo)
+            logo_attached = True
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+    
+    # If logo couldn't be attached, provide a fallback
+    if not logo_attached:
+        # Create a simple blue rectangle with "LOGO" text as fallback
+        fallback_svg = '''
+        <svg width="200" height="50" viewBox="0 0 200 50" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="50" fill="#007bff"/>
+            <text x="100" y="30" font-family="Arial" font-size="14"
+                  fill="white" text-anchor="middle">LOGO</text>
+        </svg>
+        '''
+        import base64
+        fallback_b64 = base64.b64encode(fallback_svg.encode()).decode()
+        
+        # Replace cid:logo with base64 fallback
+        html_message = html_message.replace(
+            'src="cid:logo"',
+            f'src="data:image/svg+xml;base64,{fallback_b64}"'
+        )
+        
+        # Update the message with modified HTML
+        message.alternatives = []
+        message.attach_alternative(html_message, "text/html")
 
     if image_src:
         # Download image in a temp folder
@@ -105,3 +155,26 @@ def send_email(
             message.attach(image)
 
     message.send()
+
+
+def test_email_with_logo(to_email: str):
+    """Test function to send an email with embedded logo.
+    
+    Args:
+        to_email (str): email address to send test email to
+    """
+    send_email(
+        subject="Test Email with Logo",
+        name="Test User",
+        texts=[
+            "This is a test email to verify that the logo is properly embedded.",
+            "If you can see the logo above, the embedding is working correctly!"
+        ],
+        cta_link="https://example.com",
+        cta_text="Test Button",
+        to_email=to_email,
+        key_items={
+            "Test Key": "Test Value",
+            "Status": "Working"
+        }
+    )

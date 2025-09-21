@@ -208,3 +208,25 @@ class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
         # Validate no email sent
         emails_sent = mail.outbox
         self.assertEqual(len(emails_sent), 0)
+        
+    def test_logo_attached(self):
+        """Test that the logo is attached to the email"""
+        # Submit data as a post html form
+        self.client.post(
+            self.endpoint,
+            self.data,
+            format='multipart'
+        )
+        
+        # Validate 1 email sent
+        emails_sent = mail.outbox
+        self.assertEqual(len(emails_sent), 1)
+
+        # Validate the logo is attached to the email
+        email = mail.outbox[0]
+        self.assertIn("cid:logo", email.alternatives[0][0])
+        
+        # Validate src of logo
+        soup = BeautifulSoup(email.alternatives[0][0], "html.parser")
+        logo_src = soup.select_one("img.banner")["src"]
+        self.assertIn("cid:logo", logo_src)
