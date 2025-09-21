@@ -148,6 +148,25 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
         # Validate user created correctly
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_user_missing_info(self):
+        """Test that an error is received when there's missing fields"""
+
+        data = {
+            "username": "test_user_email",
+            "password": "testpassword",
+            "email": "test_user_email@gmail.com",
+        }
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(
+            self.endpoint,
+            data,  # Don't use urlencode for multipart
+            format="multipart",  # Use multipart for file uploads
+        )
+
+        # Validate user created correctly
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
     """Test activation email behavior in the register view"""
