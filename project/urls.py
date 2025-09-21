@@ -36,6 +36,17 @@ urlpatterns = [
         users_views.ActivateAccountView.as_view(),
         name="activate_account",
     ),
+    path(
+        "auth/recover/",
+        users_views.RecoverPasswordView.as_view(),
+        name="recover_password",
+    ),
+    # path(
+    #     "auth/reset/<str:token>/",
+    #     users_views.ResetPasswordView.as_view(),
+    #     name="reset_password",
+    # ),
+    
     # Crud endpoints
     path("api/", include(router.urls)),
 ]

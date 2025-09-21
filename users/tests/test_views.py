@@ -426,3 +426,110 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
         # Validate user is not activated and token still disabled
         self.__validate_token_user(token_is_active=False, user_is_active=False)
+
+
+class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
+    """Test recover password behavior in the recover password view"""
+
+    def setUp(self):
+        super().setUp(
+            endpoint="/auth/recover/",
+            restricted_post=False,
+        )
+
+        # Create user directly in the database
+        self.email = "test_user_recover@gmail.com"
+        self.user = User.objects.create_user(
+            username=self.email,
+            password="testpassword",
+            email=self.email,
+        )
+
+        # Create profile directly in the database
+        self.profile = models.Profile.objects.create(
+            user=self.user,
+            name="Test User Recover",
+        )
+
+    def __validate_no_email_sent(self):
+        """Validate that no email is sent"""
+        mails = mail.outbox
+        self.assertEqual(len(mails), 0)
+
+    def __validate_error_response(self, response: Response):
+        """Validate that the response is an error"""
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "Invalid email.")
+        self.assertIn("email", response.data["data"])
+
+    def test_recover_password(self):
+        """
+        Test recover password
+
+        Expects:
+            - The email is sent
+            - The response is a 200 OK
+            - The status is ok
+            - The message is Recovery email sent successfully.
+            - The data contains the email
+        """
+
+        # Submit data as a post html form
+        response = self.client.post(self.endpoint, {"email": self.email})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "ok")
+        self.assertEqual(response.data["message"], "Recovery email sent successfully.")
+        self.assertEqual(response.data["data"]["email"], self.email)
+
+        # Validate email sent
+        mails = mail.outbox
+
+        # Check email main data
+        self.assertEqual(len(mails), 1)
+        self.assertEqual(mails[0].to, [self.email])
+        self.assertEqual(mails[0].subject, "Recover your password")
+
+        # Validate email recover link
+        recover_token = models.TempToken.objects.get(
+            profile=self.profile, type="reset_password"
+        ).token
+        soup = BeautifulSoup(mails[0].alternatives[0][0], "html.parser")
+        recover_link = soup.select_one("a.cta")["href"]
+        self.assertIn("/auth/reset/", recover_link)
+        self.assertIn(recover_token, recover_link)
+
+    def test_invalid_email(self):
+        """
+        Test recover password with an invalid email
+
+        Expects:
+            - The response is a 400 BAD REQUEST
+            - The status is error
+            - The message is Invalid email.
+            - The data an email error
+        """
+
+        # Submit data as a post html form
+        response = self.client.post(self.endpoint, {"email": "invalid_email@gmail.com"})
+        self.__validate_error_response(response)
+
+        # Validate no email sent
+        self.__validate_no_email_sent()
+
+    def test_no_email(self):
+        """Test recover password with no email
+        
+        Expects:
+            - The response is a 400 BAD REQUEST
+            - The status is error
+            - The message is Invalid email.
+            - The data an email error
+        """
+
+        # Submit data as a post html form
+        response = self.client.post(self.endpoint, {"email": ""})
+        self.__validate_error_response(response)
+
+        # Validate no email sent
+        self.__validate_no_email_sent()

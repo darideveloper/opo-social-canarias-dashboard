@@ -90,3 +90,13 @@ class ActivateAccountSerializer(serializers.Serializer):
         user.save()
 
         return token
+
+
+class RecoverPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        """Check if email exists"""
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email not found.")
+        return value
