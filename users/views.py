@@ -31,13 +31,6 @@ class RegisterView(APIView):
 
             # Create data and get profile
             user = serializer.save()
-<<<<<<< HEAD
-            return Response(
-                {
-                    "message": "Account created successfully. Please check your email to activate your account.",
-                    "status": "ok",
-                    "data": {
-=======
             profile = models.Profile.objects.get(user=user)
 
             # Create activation token
@@ -70,7 +63,6 @@ class RegisterView(APIView):
                 {
                     "message": message,
                     "user": {
->>>>>>> eac0f2feea1d866a72ad21863a9f39f8ffecaad7
                         "username": user.username,
                         "email": user.email,
                     },
