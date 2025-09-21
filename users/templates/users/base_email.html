@@ -7,72 +7,28 @@
   <title>Simple Transactional Email</title>
   <style media="all" type="text/css">
     /* -------------------------------------
-    COLOR PALETTE - CSS VARIABLES
-    Easy to customize by changing these values
+    COLOR PALETTE - EMAIL CLIENT COMPATIBLE
+    Direct color values for maximum email client support
     
-    QUICK CUSTOMIZATION GUIDE:
-    =========================
+    CUSTOMIZATION GUIDE:
+    ===================
     
-    For a Light Theme (Default):
-    - Keep current values
+    To customize colors, search and replace these hex values:
+    - #f8f9fa (light background)
+    - #ffffff (white background) 
+    - #007bff (blue accent/buttons)
+    - #0056b3 (darker blue for hovers)
+    - #212529 (dark text)
+    - #6c757d (gray text)
+    - #dee2e6 (borders)
     
-    For a Dark Theme:
-    - Set --primary-bg: #1a1a1a
-    - Set --secondary-bg: #2d2d2d  
-    - Set --primary-text: #ffffff
-    - Set --secondary-text: #cccccc
-    
-    For a Brand Theme:
-    - Replace #007bff with your brand color
-    - Adjust hover states to be slightly darker/lighter
-    
-    For Accessibility:
-    - Ensure good contrast ratios (4.5:1 minimum)
-    - Test with color blindness simulators
+    For Dark Theme, replace with:
+    - #1a1a1a (dark background)
+    - #2d2d2d (darker background)
+    - #ffffff (white text)
+    - #cccccc (light gray text)
     
 ------------------------------------- */
-    :root {
-      /* Primary Colors */
-      --primary-bg: #f8f9fa;
-      --primary-accent: #007bff;
-      --primary-text: #212529;
-      
-      /* Secondary Colors */
-      --secondary-bg: #ffffff;
-      --secondary-accent: #6c757d;
-      --secondary-text: #6c757d;
-      
-      /* Action Colors */
-      --button-bg: #007bff;
-      --button-text: #ffffff;
-      --button-border: #007bff;
-      --button-hover-bg: #0056b3;
-      --button-hover-text: #ffffff;
-      
-      /* Link Colors */
-      --link-color: #007bff;
-      --link-hover: #0056b3;
-      
-      /* Footer Colors */
-      --footer-bg: transparent;
-      --footer-text: #6c757d;
-      --footer-link: #007bff;
-      
-      /* Border and Divider Colors */
-      --border-color: #dee2e6;
-      --divider-color: #e9ecef;
-      
-      /* Status Colors (optional) */
-      --success-color: #28a745;
-      --warning-color: #ffc107;
-      --error-color: #dc3545;
-      --info-color: #17a2b8;
-      
-      /* Component-specific Colors */
-      --key-item-label: var(--primary-text);
-      --key-item-value: var(--secondary-text);
-      --key-item-accent: var(--primary-accent);
-    }
 
     /* -------------------------------------
     GLOBAL RESETS
@@ -105,13 +61,13 @@
 ------------------------------------- */
 
     body {
-      background-color: var(--primary-bg);
+      background-color: #f8f9fa;
       margin: 0;
       padding: 0;
     }
 
     .body {
-      background-color: var(--primary-bg);
+      background-color: #f8f9fa;
       width: 100%;
       padding: 30px 0;
     }
@@ -137,11 +93,11 @@
 ------------------------------------- */
 
     .main {
-      background: var(--secondary-bg);
-      border: 1px solid var(--border-color);
+      background: #ffffff;
+      border: 1px solid #dee2e6;
       border-radius: 16px;
       width: 100%;
-      color: var(--primary-text);
+      color: #212529;
     }
 
     .wrapper {
@@ -160,7 +116,7 @@
     .footer p,
     .footer span,
     .footer a {
-      color: var(--footer-text);
+      color: #6c757d;
       font-size: 16px;
       text-align: center;
     }
@@ -178,7 +134,7 @@
     }
 
     a {
-      color: var(--link-color) !important;
+      color: #007bff !important;
       text-decoration: underline;
     }
 
@@ -201,17 +157,17 @@
     }
 
     .btn table td {
-      background-color: var(--button-bg);
+      background-color: #007bff;
       border-radius: 4px;
       text-align: center;
     }
 
     .btn a {
-      background-color: var(--button-bg);
-      border: solid 2px var(--button-border);
+      background-color: #007bff;
+      border: solid 2px #007bff;
       border-radius: 4px;
       box-sizing: border-box;
-      color: var(--button-text);
+      color: #ffffff;
       cursor: pointer;
       display: inline-block;
       font-size: 16px;
@@ -223,21 +179,21 @@
     }
 
     .btn-primary table td {
-      background-color: var(--button-bg);
+      background-color: #007bff;
     }
 
     .btn-primary a {
-      background-color: var(--button-bg);
-      border-color: var(--button-border);
-      color: var(--button-text) !important;
+      background-color: #007bff;
+      border-color: #007bff;
+      color: #ffffff !important;
       transition: all 0.2s;
     }
 
     @media all {
       .btn-primary a:hover {
-        background-color: var(--button-hover-bg) !important;
-        border-color: var(--button-hover-bg) !important;
-        color: var(--button-hover-text) !important;
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+        color: #ffffff !important;
       }
     }
 
@@ -266,7 +222,7 @@
     }
 
     .text-link {
-      color: var(--link-color) !important;
+      color: #007bff !important;
       text-decoration: underline !important;
     }
 
@@ -418,19 +374,19 @@
 
     .key-items li span:first-child {
       font-weight: bold;
-      color: var(--key-item-label);
+      color: #212529;
     }
 
     .key-items li span:nth-child(2) {
       margin-left: 10px;
       opacity: 0.6;
-      color: var(--key-item-value);
+      color: #6c757d;
     }
 
     .key-items li:last-child {
       font-size: 20px;
       font-weight: bold;
-      color: var(--key-item-accent);
+      color: #007bff;
     }
 
     /* Extra image (like the client's logo) */
