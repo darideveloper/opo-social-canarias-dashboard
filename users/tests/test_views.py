@@ -167,6 +167,21 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
         # Validate user created correctly
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_create_user_no_info(self):
+        """Test that an error is received when there's no data"""
+
+        data = {}
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(
+            self.endpoint,
+            data,  # Don't use urlencode for multipart
+            format="multipart",  # Use multipart for file uploads
+        )
+
+        # Validate user created correctly
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
     """Test activation email behavior in the register view"""
