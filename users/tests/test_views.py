@@ -126,7 +126,7 @@ class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
             )
 
         self.data = {
-            "username": "testuser",
+            "username": "test_user_email",
             "password": "testpassword",
             "email": "test@gmail.com",
             "avatar": avatar_file,
@@ -157,6 +157,7 @@ class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
             - The email has the correct to
             - The email has the correct body
             - The email has the correct link (token)
+            - The email has the correct name
         """
 
         # Submit data as a post html form
@@ -171,6 +172,7 @@ class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
         self.assertEqual(email.subject, "Activate your account")
         self.assertEqual(email.to, [self.data["email"]])
         self.assertIn("/auth/activate/", email.body)
+        self.assertIn("Hi " + self.data["username"].replace("_", " "), email.body)
 
         # Validate activation token
         soup = BeautifulSoup(email.alternatives[0][0], "html.parser")
