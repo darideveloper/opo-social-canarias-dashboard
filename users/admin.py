@@ -7,6 +7,7 @@ from users import models
 class ProfileAdmin(admin.ModelAdmin):
     list_display = (
         "user",
+        "name",
         "last_pass",
         "profile_img",
         "created_at",
