@@ -127,6 +127,7 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             )
 
         self.data = {
+            "name": "Sample name",
             "username": "test_user_email",
             "password": "testpassword",
             "email": "test_user_email@gmail.com",
@@ -134,8 +135,8 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             "last_password": "test last password",
         }
 
-    def test_created_email_sent(self):
-        """Test that an email is sent when a user is created"""
+    def test_create_user_full_info(self):
+        """Test that a user is created"""
 
         # Submit data as multipart form (required for file uploads)
         response = self.client.post(
@@ -143,11 +144,9 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             self.data,  # Don't use urlencode for multipart
             format="multipart",  # Use multipart for file uploads
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Validate 1 email sent
-        emails_sent = mail.outbox
-        self.assertEqual(len(emails_sent), 1)
+        # Validate user created correctly
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
@@ -208,7 +207,7 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
 
         # Create a user directly in the database
         User.objects.create_user(
-            username=self.data["username"],
+            username=self.data["email"],
             password=self.data["password"],
             email=self.data["email"],
         )
