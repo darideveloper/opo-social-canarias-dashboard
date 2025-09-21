@@ -7,6 +7,74 @@
   <title>Simple Transactional Email</title>
   <style media="all" type="text/css">
     /* -------------------------------------
+    COLOR PALETTE - CSS VARIABLES
+    Easy to customize by changing these values
+    
+    QUICK CUSTOMIZATION GUIDE:
+    =========================
+    
+    For a Light Theme (Default):
+    - Keep current values
+    
+    For a Dark Theme:
+    - Set --primary-bg: #1a1a1a
+    - Set --secondary-bg: #2d2d2d  
+    - Set --primary-text: #ffffff
+    - Set --secondary-text: #cccccc
+    
+    For a Brand Theme:
+    - Replace #007bff with your brand color
+    - Adjust hover states to be slightly darker/lighter
+    
+    For Accessibility:
+    - Ensure good contrast ratios (4.5:1 minimum)
+    - Test with color blindness simulators
+    
+------------------------------------- */
+    :root {
+      /* Primary Colors */
+      --primary-bg: #f8f9fa;
+      --primary-accent: #007bff;
+      --primary-text: #212529;
+      
+      /* Secondary Colors */
+      --secondary-bg: #ffffff;
+      --secondary-accent: #6c757d;
+      --secondary-text: #6c757d;
+      
+      /* Action Colors */
+      --button-bg: #007bff;
+      --button-text: #ffffff;
+      --button-border: #007bff;
+      --button-hover-bg: #0056b3;
+      --button-hover-text: #ffffff;
+      
+      /* Link Colors */
+      --link-color: #007bff;
+      --link-hover: #0056b3;
+      
+      /* Footer Colors */
+      --footer-bg: transparent;
+      --footer-text: #6c757d;
+      --footer-link: #007bff;
+      
+      /* Border and Divider Colors */
+      --border-color: #dee2e6;
+      --divider-color: #e9ecef;
+      
+      /* Status Colors (optional) */
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --error-color: #dc3545;
+      --info-color: #17a2b8;
+      
+      /* Component-specific Colors */
+      --key-item-label: var(--primary-text);
+      --key-item-value: var(--secondary-text);
+      --key-item-accent: var(--primary-accent);
+    }
+
+    /* -------------------------------------
     GLOBAL RESETS
 ------------------------------------- */
 
@@ -37,13 +105,13 @@
 ------------------------------------- */
 
     body {
-      background-color: #2C3333;
+      background-color: var(--primary-bg);
       margin: 0;
       padding: 0;
     }
 
     .body {
-      background-color: #2C3333;
+      background-color: var(--primary-bg);
       width: 100%;
       padding: 30px 0;
     }
@@ -69,11 +137,11 @@
 ------------------------------------- */
 
     .main {
-      background: #395B64;
-      border: 1px solid #395B64;
+      background: var(--secondary-bg);
+      border: 1px solid var(--border-color);
       border-radius: 16px;
       width: 100%;
-      color: #E7F6F2;
+      color: var(--primary-text);
     }
 
     .wrapper {
@@ -92,7 +160,7 @@
     .footer p,
     .footer span,
     .footer a {
-      color: #e7f6f26e;
+      color: var(--footer-text);
       font-size: 16px;
       text-align: center;
     }
@@ -110,7 +178,7 @@
     }
 
     a {
-      color: #A5C9CA !important;
+      color: var(--link-color) !important;
       text-decoration: underline;
     }
 
@@ -133,17 +201,17 @@
     }
 
     .btn table td {
-      background-color: #ffffff;
+      background-color: var(--button-bg);
       border-radius: 4px;
       text-align: center;
     }
 
     .btn a {
-      background-color: #ffffff;
-      border: solid 2px #A5C9CA;
+      background-color: var(--button-bg);
+      border: solid 2px var(--button-border);
       border-radius: 4px;
       box-sizing: border-box;
-      color: #A5C9CA;
+      color: var(--button-text);
       cursor: pointer;
       display: inline-block;
       font-size: 16px;
@@ -155,21 +223,21 @@
     }
 
     .btn-primary table td {
-      background-color: #A5C9CA;
+      background-color: var(--button-bg);
     }
 
     .btn-primary a {
-      background-color: #2C3333;
-      border-color: #2C3333;
-      color: #A5C9CA;
+      background-color: var(--button-bg);
+      border-color: var(--button-border);
+      color: var(--button-text) !important;
       transition: all 0.2s;
     }
 
     @media all {
       .btn-primary a:hover {
-        background-color: #A5C9CA !important;
-        border-color: #A5C9CA !important;
-        color: #2C3333 !important;
+        background-color: var(--button-hover-bg) !important;
+        border-color: var(--button-hover-bg) !important;
+        color: var(--button-hover-text) !important;
       }
     }
 
@@ -198,7 +266,7 @@
     }
 
     .text-link {
-      color: #0867ec !important;
+      color: var(--link-color) !important;
       text-decoration: underline !important;
     }
 
@@ -350,16 +418,19 @@
 
     .key-items li span:first-child {
       font-weight: bold;
+      color: var(--key-item-label);
     }
 
     .key-items li span:nth-child(2) {
       margin-left: 10px;
       opacity: 0.6;
+      color: var(--key-item-value);
     }
 
     .key-items li:last-child {
       font-size: 20px;
       font-weight: bold;
+      color: var(--key-item-accent);
     }
 
     /* Extra image (like the client's logo) */
@@ -388,7 +459,7 @@
               <td class="wrapper">
                 <img src="https://nyxdashboard.s3.amazonaws.com/media/images/hero_gallery_kofi_1.webp"
                   alt="NyxTrackers banner" class="banner" />
-                <h1>Hi {{first_name}} {{last_name}}</h1>
+                <h1>Hi {{name}}</h1>
 
                 {% for text in texts %}
                 <p>
