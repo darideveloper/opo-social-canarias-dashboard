@@ -32,25 +32,27 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
     last_password = serializers.CharField(required=False, write_only=True)
+    name = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "avatar", "last_password"]
+        fields = ["email", "password", "avatar", "last_password", "name"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
         avatar = validated_data.pop("avatar", None)
         last_password = validated_data.pop("last_password", None)
+        name = validated_data.pop("name", None)
 
         user = User.objects.create_user(
-            username=validated_data["username"],
+            username=validated_data["email"],
             email=validated_data.get("email"),
             password=validated_data["password"],
             is_active=False,  # ⬅ user can’t log in until activation
         )
 
         models.Profile.objects.create(
-            user=user, profile_img=avatar, last_pass=last_password
+            user=user, name=name, profile_img=avatar, last_pass=last_password
         )
         return user
 
