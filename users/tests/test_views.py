@@ -345,10 +345,9 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
     def __validate_response_error(self, response: Response):
         """Validate that the response is an error"""
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn(settings.LANDING_PAGE, response.url)
-        self.assertIn("status=error", response.url)
-        self.assertIn("message-code=account-activation-failed", response.url)
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "Account activation failed.")
+        self.assertEqual(response.data["data"]["token"], ["Invalid token."])
 
     def test_activate_account(self):
         """Test try to activate an account with a valid token
@@ -361,10 +360,9 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
         # Validate response
         response = self.client.get(self.endpoint.format(token=self.token))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn(settings.LANDING_PAGE, response.url)
-        self.assertIn("status=success", response.url)
-        self.assertIn("message-code=account-activated", response.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "ok")
+        self.assertEqual(response.data["message"], "Account activated successfully.")
 
         # Validate token disable and user activated
         self.__validate_token_user(token_is_active=False, user_is_active=True)
@@ -519,7 +517,7 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
 
     def test_no_email(self):
         """Test recover password with no email
-        
+
         Expects:
             - The response is a 400 BAD REQUEST
             - The status is error
