@@ -5,7 +5,7 @@
 #
 
 # Use Python 3.12 slim image
-FROM mcr.microsoft.com/playwright/python:v1.54.0-noble
+FROM python:3.12-slim
 
 # ENV variables
 
@@ -16,6 +16,8 @@ ARG HOST
 ARG ALLOWED_HOSTS
 ARG PAGE_SIZE
 ARG TEST_HEADLESS
+ARG LANGUAGE_CODE
+ARG TIME_ZONE
 
 # CORS / CSRF settings (optional)
 ARG CORS_ALLOWED_ORIGINS
@@ -35,6 +37,22 @@ ARG DB_PASSWORD
 ARG DB_HOST
 ARG DB_PORT
 
+# Jazzmin
+ARG SITE_TITLE
+ARG SITE_BRAND
+ARG WELCOME_SIGN
+
+# JWT refresh times
+ARG ACCESS_TOKEN_LIFETIME_MINUTES
+ARG REFRESH_TOKEN_LIFETIME_HOURS
+
+# Emails
+ARG EMAIL_HOST=
+ARG EMAIL_HOST_PASSWORD=
+ARG EMAIL_HOST_USER=
+ARG EMAIL_PORT=
+ARG EMAIL_USE_SSL=
+
 # Django core settings
 ENV SECRET_KEY=${SECRET_KEY}
 ENV DEBUG=${DEBUG}
@@ -42,7 +60,8 @@ ENV HOST=${HOST}
 ENV ALLOWED_HOSTS=${ALLOWED_HOSTS}
 ENV PAGE_SIZE=${PAGE_SIZE}
 ENV TEST_HEADLESS=${TEST_HEADLESS}
-
+ENV LANGUAGE_CODE=${LANGUAGE_CODE}
+ENV TIME_ZONE=${TIME_ZONE}
 # CORS / CSRF settings (optional)
 ENV CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
 ENV CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
@@ -61,6 +80,23 @@ ENV DB_PASSWORD=${DB_PASSWORD}
 ENV DB_HOST=${DB_HOST}
 ENV DB_PORT=${DB_PORT}
 
+# Jazzmin
+ENV SITE_TITLE=${SITE_TITLE}
+ENV SITE_BRAND=${SITE_BRAND}
+ENV WELCOME_SIGN=${WELCOME_SIGN}
+
+# JWT refresh times
+ENV ACCESS_TOKEN_LIFETIME_MINUTES=${ACCESS_TOKEN_LIFETIME_MINUTES}
+ENV REFRESH_TOKEN_LIFETIME_HOURS=${REFRESH_TOKEN_LIFETIME_HOURS}
+
+# Emails
+ENV EMAIL_HOST=${EMAIL_HOST}
+ENV EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+ENV EMAIL_HOST_USER=${EMAIL_HOST_USER}
+ENV EMAIL_PORT=${EMAIL_PORT}
+ENV EMAIL_USE_SSL=${EMAIL_USE_SSL}
+
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -70,20 +106,12 @@ COPY . /app/
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpq-dev gcc \
-    curl \
-    wget \
-    gnupg \
-    ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
-# Install Playwright browsers
-RUN python -m playwright install
-
 
 # Collect static files and migrate database
 RUN python manage.py collectstatic --noinput

@@ -4,7 +4,7 @@ from django.db import models
 class Profile(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.OneToOneField("auth.User", on_delete=models.CASCADE)
-    last_pass = models.CharField(max_length=100)
+    last_pass = models.CharField(max_length=100, null=True, blank=True)
     profile_img = models.ImageField(upload_to='profile/')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

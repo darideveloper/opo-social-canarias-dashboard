@@ -7,8 +7,6 @@ __pycache__/
 .log
 *pyc
 temp.*
-*temp
-*temp*
 
 .vscode/
 /json_data
