@@ -8,21 +8,17 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from users.serializers import RegisterSerializer
-from users.serializers import (
-    CustomTokenObtainPairSerializer,
-    CustomTokenRefreshSerializer,
-)
+from users import serializers
 from utils import emails
 from users import models
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+    serializer_class = serializers.CustomTokenObtainPairSerializer
 
 
 class CustomTokenRefreshView(TokenRefreshView):
-    serializer_class = CustomTokenRefreshSerializer
+    serializer_class = serializers.CustomTokenRefreshSerializer
 
 
 class RegisterView(APIView):
@@ -30,7 +26,7 @@ class RegisterView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        serializer = RegisterSerializer(data=request.POST)
+        serializer = serializers.RegisterSerializer(data=request.POST)
         if serializer.is_valid():
 
             # Create data and get profile
@@ -77,14 +73,27 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class ActivateAccountView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
+class ActivateAccountView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
-#     def get(self, request, token):
-#         serializer = ActivateAccountSerializer(data={"token": token})
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({"message": "Account activated successfully."}, s
-# tatus=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, token):
+        serializer = serializers.ActivateAccountSerializer(data={"token": token})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "status": "ok",
+                    "message": "Account activated successfully.",
+                    "data": {},
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "status": "error",
+                "message": "Account activation failed.",
+                "data": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )

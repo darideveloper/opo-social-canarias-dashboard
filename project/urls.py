@@ -4,12 +4,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from users.views import RegisterView
 
-from users.views import (
-    CustomTokenObtainPairView,
-    CustomTokenRefreshView,
-)
+from users import views as users_views
 
 # Setup drf router
 router = routers.DefaultRouter()
@@ -24,10 +20,22 @@ urlpatterns = [
         name="login-redirect-admin",
     ),
     # Auth
-    path("auth/register/", RegisterView.as_view(), name="auth_register"),
-    path("auth/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("auth/token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
-    
+    path("auth/register/", users_views.RegisterView.as_view(), name="auth_register"),
+    path(
+        "auth/token/",
+        users_views.CustomTokenObtainPairView.as_view(),
+        name="token_obtain_pair",
+    ),
+    path(
+        "auth/token/refresh/",
+        users_views.CustomTokenRefreshView.as_view(),
+        name="token_refresh",
+    ),
+    path(
+        "auth/activate/<str:token>/",
+        users_views.ActivateAccountView.as_view(),
+        name="activate_account",
+    ),
     # Crud endpoints
     path("api/", include(router.urls)),
 ]

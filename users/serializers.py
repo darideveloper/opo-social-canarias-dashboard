@@ -1,11 +1,16 @@
-from django.contrib.auth.models import User
-from rest_framework import serializers
-from .models import Profile
+from datetime import timedelta
 
+from django.conf import settings
+from django.utils import timezone
+from django.contrib.auth.models import User
+
+from rest_framework import serializers
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
 )
+
+from users import models
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -44,5 +49,42 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_active=False,  # ⬅ user can’t log in until activation
         )
 
-        Profile.objects.create(user=user, profile_img=avatar, last_pass=last_password)
+        models.Profile.objects.create(
+            user=user, profile_img=avatar, last_pass=last_password
+        )
         return user
+
+
+class ActivateAccountSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+    def validate_token(self, value):
+        """Check if tokern exists and its less than 1 hour"""
+        tokens_lifetime = settings.CUSTOM_TOKENS_LIFETIME_HOURS
+        
+        # Validate if token exists
+        try:
+            token = models.TempToken.objects.get(token=value, type="sign_up")
+        except models.TempToken.DoesNotExist:
+            raise serializers.ValidationError("Invalid token.")
+        
+        # Validate token expiration and if it's active
+        token_expiration = token.created_at + timedelta(hours=tokens_lifetime)
+        if token.is_active and token_expiration > timezone.now():
+            return token
+        raise serializers.ValidationError("Invalid token.")
+
+    def save(self):
+        """Activate user"""
+
+        # Disable token
+        token = models.TempToken.objects.get(token=self.validated_data["token"])
+        token.is_active = False
+        token.save()
+
+        # Activate user
+        user = token.profile.user
+        user.is_active = True
+        user.save()
+
+        return token
