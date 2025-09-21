@@ -25,12 +25,16 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({
-                "message": "Account created successfully. Please check your email to activate your account.",
-                "user": {
-                    "username": user.username,
-                    "email": user.email,
-                }
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "message": "Account created successfully. Please check your email to activate your account.",
+                    "status": "ok",
+                    "data": {
+                        "username": user.username,
+                        "email": user.email,
+                    },
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
