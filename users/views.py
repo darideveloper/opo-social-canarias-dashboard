@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.shortcuts import redirect
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -78,22 +79,15 @@ class ActivateAccountView(APIView):
     authentication_classes = []
 
     def get(self, request, token):
+        
+        redirect_page = settings.LANDING_PAGE
+        error_param = "status=error&message-code=account-activation-failed"
+        success_param = "status=success&message-code=account-activated"
+        error_page = f"{redirect_page}?{error_param}"
+        success_page = f"{redirect_page}?{success_param}"
+        
         serializer = serializers.ActivateAccountSerializer(data={"token": token})
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    "status": "ok",
-                    "message": "Account activated successfully.",
-                    "data": {},
-                },
-                status=status.HTTP_200_OK,
-            )
-        return Response(
-            {
-                "status": "error",
-                "message": "Account activation failed.",
-                "data": serializer.errors,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+            return redirect(success_page)
+        return redirect(error_page)
