@@ -133,7 +133,7 @@ class RecoverPasswordView(APIView):
             models.TempToken.objects.create(
                 profile=profile,
                 token=id_token,
-                type="reset_password",
+                type="pass",
             )
 
             # Submit recovery email
@@ -158,7 +158,41 @@ class RecoverPasswordView(APIView):
         return Response(
             {
                 "status": "error",
-                "message": "Invalid email.",
+                "message": "Error sending recovery email.",
+                "data": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class ResetPasswordView(APIView):
+    """
+    Reset password by token with success or error message
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = serializers.ResetPasswordSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "status": "ok",
+                    "message": "Password reset successfully.",
+                    "data": {},
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            {
+                "status": "error",
+                "message": "Error resetting password.",
                 "data": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,

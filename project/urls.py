@@ -41,11 +41,11 @@ urlpatterns = [
         users_views.RecoverPasswordView.as_view(),
         name="recover_password",
     ),
-    # path(
-    #     "auth/reset/<str:token>/",
-    #     users_views.ResetPasswordView.as_view(),
-    #     name="reset_password",
-    # ),
+    path(
+        "auth/reset/",
+        users_views.ResetPasswordView.as_view(),
+        name="reset_password",
+    ),
     
     # Crud endpoints
     path("api/", include(router.urls)),

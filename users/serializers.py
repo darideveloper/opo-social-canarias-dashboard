@@ -57,19 +57,26 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class ActivateAccountSerializer(serializers.Serializer):
+class TokenSerializer(serializers.Serializer):
     token = serializers.CharField()
+    token_type = serializers.CharField()
 
     def validate_token(self, value):
-        """Check if tokern exists and its less than 1 hour"""
+        """Check if token exists and its less than live time"""
         tokens_lifetime = settings.CUSTOM_TOKENS_LIFETIME_HOURS
-        
+
         # Validate if token exists
+        token_type = getattr(self, 'token_type', None)
+        if not token_type:
+            raise serializers.ValidationError("Token type not specified.")
+            
         try:
-            token = models.TempToken.objects.get(token=value, type="sign_up")
+            token = models.TempToken.objects.get(
+                token=value, type=token_type
+            )
         except models.TempToken.DoesNotExist:
             raise serializers.ValidationError("Invalid token.")
-        
+
         # Validate token expiration and if it's active
         token_expiration = token.created_at + timedelta(hours=tokens_lifetime)
         if token.is_active and token_expiration > timezone.now():
@@ -77,16 +84,42 @@ class ActivateAccountSerializer(serializers.Serializer):
         raise serializers.ValidationError("Invalid token.")
 
     def save(self):
-        """Activate user"""
-
-        # Disable token
+        """Save token"""
         token = models.TempToken.objects.get(token=self.validated_data["token"])
         token.is_active = False
         token.save()
+        return token
+
+
+class ActivateAccountSerializer(TokenSerializer):
+    # "token" field from parent class
+    token_type = "sign_up"
+
+    def save(self):
+        """Activate user"""
+
+        token = super().save()
 
         # Activate user
         user = token.profile.user
         user.is_active = True
+        user.save()
+
+        return token
+
+
+class ResetPasswordSerializer(TokenSerializer):
+    # "token" field from parent class
+    token_type = "pass"
+    new_password = serializers.CharField(required=True)
+
+    def save(self):
+        """Reset password"""
+        token = super().save()
+
+        # Update user password
+        user = token.profile.user
+        user.set_password(self.validated_data["new_password"])
         user.save()
 
         return token

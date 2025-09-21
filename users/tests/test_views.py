@@ -108,7 +108,9 @@ class CustomJWTViewTests(APITestCase):
 
 
 class RegisterBaseTestsCase(BaseTestApiViewsMethods):
-    """Test activation email behavior in the register view"""
+    """
+    Test activation email behavior in the register view
+    """
 
     def setUp(self):
         super().setUp(
@@ -205,10 +207,22 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
 
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
-    """Test activation email behavior in the register view"""
+    """
+    Test activation email behavior in the register view
+    """
 
     def test_created_email_sent(self):
-        """Test that an email is sent when a user is created"""
+        """
+        Test that an email is sent when a user is created
+
+        Expects:
+            - An email is sent to the user
+            - The email has the correct subject
+            - The email has the correct to
+            - The email has the correct body
+            - The email has the correct link (token)
+            - The email has the correct name
+        """
 
         # Submit data as multipart form (required for file uploads)
         response = self.client.post(
@@ -223,7 +237,8 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
         self.assertEqual(len(emails_sent), 1)
 
     def test_created_email_content(self):
-        """Test content of the email sent when a user is created
+        """
+        Test content of the email sent when a user is created
 
         Expects:
             - An email is sent to the user
@@ -252,7 +267,8 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
         self.assertEqual(token.profile.user.email, self.data["email"])
 
     def test_no_created_no_email_sent(self):
-        """Test that no email is sent when a user is not created
+        """
+        Test that no email is sent when a user is not created
 
         Expects:
             - No email is sent
@@ -276,7 +292,14 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
         self.assertEqual(len(emails_sent), 0)
 
     def test_logo_attached(self):
-        """Test that the logo is attached to the email"""
+        """
+        Test that the logo is attached to the email
+
+        Expects:
+            - The logo is attached to the email
+            - The src of the logo is correct
+        """
+
         # Submit data as a post html form
         self.client.post(self.endpoint, self.data, format="multipart")
 
@@ -295,7 +318,9 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
 
 
 class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
-    """Test activation account behavior in the activate account view"""
+    """
+    Test activation account behavior in the activate account view
+    """
 
     def setUp(self):
         super().setUp(
@@ -314,7 +339,8 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         self.token = self.__register_default_user()
 
     def __register_default_user(self) -> str:
-        """Register a user
+        """
+        Register a user and return the token
 
         Returns:
             str: The token of the user
@@ -329,7 +355,8 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         return token.token
 
     def __validate_token_user(self, token_is_active: bool, user_is_active: bool):
-        """Validate that the user is not activated
+        """
+        Validate that the user is not activated
 
         Args:
             token_is_active (bool): If the token is active
@@ -343,14 +370,21 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         self.assertEqual(token.is_active, token_is_active)
 
     def __validate_response_error(self, response: Response):
-        """Validate that the response is an error"""
+        """
+        Validate that the response is an error
+
+        Args:
+            response (Response): The response to validate
+        """
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["status"], "error")
         self.assertEqual(response.data["message"], "Account activation failed.")
         self.assertEqual(response.data["data"]["token"], ["Invalid token."])
 
     def test_activate_account(self):
-        """Test try to activate an account with a valid token
+        """
+        Test try to activate an account with a valid token
 
         Expects:
             - The user is activated
@@ -368,7 +402,8 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         self.__validate_token_user(token_is_active=False, user_is_active=True)
 
     def test_invalid_token(self):
-        """Test try to activate an account with an invalid token
+        """
+        Test try to activate an account with an invalid token
 
         Expects:
             - The user is not activated
@@ -384,7 +419,8 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         self.__validate_token_user(token_is_active=True, user_is_active=False)
 
     def test_expired_token(self):
-        """Test try to activate an account with an expired token
+        """
+        Test try to activate an account with an expired token
 
         Expects:
             - The user is not activated
@@ -405,7 +441,8 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         self.__validate_token_user(token_is_active=True, user_is_active=False)
 
     def test_disabled_token(self):
-        """Test try to activate an account with a disabled token
+        """
+        Test try to activate an account with a disabled token
 
         Expects:
             - The user is not activated
@@ -427,7 +464,9 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
 
 class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
-    """Test recover password behavior in the recover password view"""
+    """
+    Test recover password behavior in the recover password view
+    """
 
     def setUp(self):
         super().setUp(
@@ -450,15 +489,24 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         )
 
     def __validate_no_email_sent(self):
-        """Validate that no email is sent"""
+        """
+        Validate that no email is sent
+        """
+
         mails = mail.outbox
         self.assertEqual(len(mails), 0)
 
     def __validate_error_response(self, response: Response):
-        """Validate that the response is an error"""
+        """
+        Validate that the response is an error
+
+        Args:
+            response (Response): The response to validate
+        """
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["status"], "error")
-        self.assertEqual(response.data["message"], "Invalid email.")
+        self.assertEqual(response.data["message"], "Error sending recovery email.")
         self.assertIn("email", response.data["data"])
 
     def test_recover_password(self):
@@ -473,7 +521,7 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
             - The data contains the email
         """
 
-        # Submit data as a post html form
+        # Submit data as a post json
         response = self.client.post(self.endpoint, {"email": self.email})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "ok")
@@ -488,9 +536,9 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         self.assertEqual(mails[0].to, [self.email])
         self.assertEqual(mails[0].subject, "Recover your password")
 
-        # Validate email recover link
+        # Validate email recover link and token
         recover_token = models.TempToken.objects.get(
-            profile=self.profile, type="reset_password"
+            profile=self.profile, type="pass"
         ).token
         soup = BeautifulSoup(mails[0].alternatives[0][0], "html.parser")
         recover_link = soup.select_one("a.cta")["href"]
@@ -508,15 +556,16 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
             - The data an email error
         """
 
-        # Submit data as a post html form
+        # Submit data as a post json
         response = self.client.post(self.endpoint, {"email": "invalid_email@gmail.com"})
         self.__validate_error_response(response)
 
         # Validate no email sent
         self.__validate_no_email_sent()
 
-    def test_no_email(self):
-        """Test recover password with no email
+    def test_missing_data(self):
+        """
+        Test recover password with missing data
 
         Expects:
             - The response is a 400 BAD REQUEST
@@ -525,9 +574,177 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
             - The data an email error
         """
 
-        # Submit data as a post html form
-        response = self.client.post(self.endpoint, {"email": ""})
+        # Submit data as a post json
+        response = self.client.post(self.endpoint, {})
         self.__validate_error_response(response)
 
         # Validate no email sent
         self.__validate_no_email_sent()
+
+        # Validate required fields in response
+        self.assertIn("email", response.data["data"])
+
+
+class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
+    """Test reset password behavior in the reset password view"""
+
+    def setUp(self):
+        super().setUp(
+            endpoint="/auth/reset/",
+            restricted_post=False,
+        )
+
+        # Create user directly in the database
+        self.user = User.objects.create_user(
+            username="test_user_reset",
+            password="testpassword",
+            email="test_user_reset@gmail.com",
+        )
+
+        # Create profile directly in the database
+        self.profile = models.Profile.objects.create(
+            user=self.user,
+            name="Test User Reset",
+        )
+
+        # Create reset password token
+        self.token = models.TempToken.objects.create(
+            profile=self.profile,
+            token="test_token",
+            type="pass",
+        )
+
+    def __validate_error_response(self, response: Response):
+        """
+        Validate that the response is an error
+
+        Args:
+            response (Response): The response to validate
+        """
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "Error resetting password.")
+
+    def test_reset_password(self):
+        """
+        Test reset password
+
+        Expects:
+            - The user is reset password
+            - The token is disabled
+            - The response is a 200 OK
+        """
+
+        # Submit data as a post json
+        new_password = "new_password"
+        response = self.client.post(
+            self.endpoint, {"token": self.token, "new_password": new_password}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "ok")
+        self.assertEqual(response.data["message"], "Password reset successfully.")
+        self.assertEqual(response.data["data"], {})
+
+        # Validate user password
+        user = User.objects.get(email=self.profile.user.email)
+        self.assertTrue(user.check_password(new_password))
+        
+        # Validate token is disabled
+        self.token.refresh_from_db()
+        self.assertFalse(self.token.is_active)
+
+    def test_invalid_token(self):
+        """
+        Test reset password with an invalid token
+
+        Expects:
+            - The user is not reset password
+            - The token is not disabled
+            - The response is a 400 BAD REQUEST
+        """
+
+        # Submit data as a post json
+        new_password = "new_password"
+        response = self.client.post(
+            self.endpoint, {"token": "invalid_token", "new_password": new_password}
+        )
+        self.__validate_error_response(response)
+
+        # Validate real token is active
+        self.token.refresh_from_db()
+        self.assertTrue(self.token.is_active)
+
+    def test_expired_token(self):
+        """
+        Test reset password with an expired token
+
+        Expects:
+            - The user is not reset password
+            - The token is not disabled
+            - The response is a 400 BAD REQUEST
+        """
+
+        # Change created_at to 100 hours ago
+        token = models.TempToken.objects.get(token=self.token)
+        token.created_at = timezone.now() - timedelta(hours=100)
+        token.save()
+
+        # Submit data as a post json
+        new_password = "new_password"
+        response = self.client.post(
+            self.endpoint, {"token": self.token, "new_password": new_password}
+        )
+        self.__validate_error_response(response)
+
+        # Validate token its active (expired but not used)
+        self.token.refresh_from_db()
+        self.assertTrue(self.token.is_active)
+
+    def test_disabled_token(self):
+        """
+        Test reset password with a disabled token
+
+        Expects:
+            - The user is not reset password
+            - The token is not disabled
+            - The response is a 400 BAD REQUEST
+        """
+
+        # Disable token
+        token = models.TempToken.objects.get(token=self.token)
+        token.is_active = False
+        token.save()
+
+        # Submit data as a post json
+        new_password = "new_password"
+        response = self.client.post(
+            self.endpoint, {"token": self.token, "new_password": new_password}
+        )
+        self.__validate_error_response(response)
+
+        # Validate token still disabled
+        self.token.refresh_from_db()
+        self.assertFalse(self.token.is_active)
+        
+    def test_missing_data(self):
+        """
+        Test reset password with missing data
+
+        Expects:
+            - The response is a 400 BAD REQUEST
+            - The status is error
+            - The message is Invalid token.
+        """
+        
+        # Submit data as a post json
+        response = self.client.post(self.endpoint, {})
+        self.__validate_error_response(response)
+
+        # Validate required fields in response
+        self.assertIn("token", response.data["data"])
+        self.assertIn("new_password", response.data["data"])
+        
+        # Validate token is active (unused)
+        self.token.refresh_from_db()
+        self.assertTrue(self.token.is_active)
