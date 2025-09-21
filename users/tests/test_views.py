@@ -107,7 +107,7 @@ class CustomJWTViewTests(APITestCase):
         self.assertNotIn("refresh", response.data["data"])
 
 
-class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
+class RegisterBaseTestsCase(BaseTestApiViewsMethods):
     """Test activation email behavior in the register view"""
 
     def setUp(self):
@@ -133,6 +133,25 @@ class RegisterViewEmailTestsCase(BaseTestApiViewsMethods):
             "avatar": avatar_file,
             "last_password": "test last password",
         }
+
+    def test_created_email_sent(self):
+        """Test that an email is sent when a user is created"""
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(
+            self.endpoint,
+            self.data,  # Don't use urlencode for multipart
+            format="multipart",  # Use multipart for file uploads
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Validate 1 email sent
+        emails_sent = mail.outbox
+        self.assertEqual(len(emails_sent), 1)
+
+
+class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
+    """Test activation email behavior in the register view"""
 
     def test_created_email_sent(self):
         """Test that an email is sent when a user is created"""
@@ -339,7 +358,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
             - The token is not disabled
             - The response is a 400 BAD REQUEST
         """
-        
+
         # Disable token
         token = models.TempToken.objects.get(token=self.token)
         token.is_active = False
