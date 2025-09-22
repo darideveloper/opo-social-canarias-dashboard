@@ -56,7 +56,7 @@ class RegisterView(APIView):
             # Submit activation email
             emails.send_email(
                 subject="Activate your account",
-                name=user.name,
+                name=user.profile.name,
                 texts=[
                     "Thank you for signing up!",
                     "Your account has been created successfully.",
