@@ -29,8 +29,8 @@ class CustomJWTViewTests(APITestCase):
         )
 
         # Setup endpoints
-        cls.token_obtain_url = "/api/token/"
-        cls.token_refresh_url = "/api/token/refresh/"
+        cls.token_obtain_url = "/auth/token/"
+        cls.token_refresh_url = "/auth/token/refresh/"
 
     def test_token_obtain_pair(self):
         """
