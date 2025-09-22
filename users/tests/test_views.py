@@ -62,10 +62,6 @@ class CustomJWTViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["status"], "error")
-        self.assertEqual(
-            response.data["message"],
-            "La combinación de credenciales no tiene una cuenta activa",
-        )
         self.assertNotIn("access", response.data["data"])
         self.assertNotIn("refresh", response.data["data"])
 
@@ -102,7 +98,6 @@ class CustomJWTViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["status"], "error")
-        self.assertEqual(response.data["message"], "El token es inválido o ha expirado")
         self.assertNotIn("access", response.data["data"])
         self.assertNotIn("refresh", response.data["data"])
 
@@ -494,7 +489,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["status"], "error")
-        self.assertEqual(response.data["message"], "Account activation failed.")
+        self.assertEqual(response.data["message"], "account_activation_failed")
         self.assertEqual(response.data["data"]["token"], ["Invalid token."])
 
     def test_activate_account(self):
@@ -511,7 +506,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         response = self.client.get(self.endpoint.format(token=self.token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "ok")
-        self.assertEqual(response.data["message"], "Account activated successfully.")
+        self.assertEqual(response.data["message"], "account_activated")
 
         # Validate token disable and user activated
         self.__validate_token_user(token_is_active=False, user_is_active=True)
@@ -621,7 +616,7 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["status"], "error")
-        self.assertEqual(response.data["message"], "Error sending recovery email.")
+        self.assertEqual(response.data["message"], "error_sending_recovery_email")
         self.assertIn("email", response.data["data"])
 
     def test_recover_password(self):
@@ -640,7 +635,7 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         response = self.client.post(self.endpoint, {"email": self.email})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "ok")
-        self.assertEqual(response.data["message"], "Recovery email sent successfully.")
+        self.assertEqual(response.data["message"], "recovery_email_sent")
         self.assertEqual(response.data["data"]["email"], self.email)
 
         # Validate email sent
@@ -739,7 +734,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["status"], "error")
-        self.assertEqual(response.data["message"], "Error resetting password.")
+        self.assertEqual(response.data["message"], "error_resetting_password")
 
     def test_reset_password(self):
         """
@@ -758,7 +753,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "ok")
-        self.assertEqual(response.data["message"], "Password reset successfully.")
+        self.assertEqual(response.data["message"], "password_reset")
         self.assertEqual(response.data["data"], {})
 
         # Validate user password

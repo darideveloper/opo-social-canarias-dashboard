@@ -69,11 +69,10 @@ class RegisterView(APIView):
 
             # return reponse
             user = serializer.save()
-            message = "account_created"
             return Response(
                 {
                     "status": "ok",
-                    "message": message,
+                    "message": "account_created",
                     "data": {
                         "email": user.email,
                     },
@@ -102,7 +101,7 @@ class ActivateAccountView(APIView):
             return Response(
                 {
                     "status": "ok",
-                    "message": "Account activated successfully.",
+                    "message": "account_activated",
                     "data": {},
                 },
                 status=status.HTTP_200_OK,
@@ -110,7 +109,7 @@ class ActivateAccountView(APIView):
         return Response(
             {
                 "status": "error",
-                "message": "Account activation failed.",
+                "message": "account_activation_failed",
                 "data": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
@@ -155,7 +154,7 @@ class RecoverPasswordView(APIView):
             return Response(
                 {
                     "status": "ok",
-                    "message": "Recovery email sent successfully.",
+                    "message": "recovery_email_sent",
                     "data": {
                         "email": serializer.validated_data["email"],
                     },
@@ -164,7 +163,7 @@ class RecoverPasswordView(APIView):
         return Response(
             {
                 "status": "error",
-                "message": "Error sending recovery email.",
+                "message": "error_sending_recovery_email",
                 "data": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
@@ -189,7 +188,7 @@ class ResetPasswordView(APIView):
             return Response(
                 {
                     "status": "ok",
-                    "message": "Password reset successfully.",
+                    "message": "password_reset",
                     "data": {},
                 },
                 status=status.HTTP_200_OK,
@@ -198,7 +197,7 @@ class ResetPasswordView(APIView):
         return Response(
             {
                 "status": "error",
-                "message": "Error resetting password.",
+                "message": "error_resetting_password",
                 "data": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
