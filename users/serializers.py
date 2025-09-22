@@ -33,21 +33,37 @@ class RegisterSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
     last_password = serializers.CharField(required=False, write_only=True)
     name = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
         fields = ["email", "password", "avatar", "last_password", "name"]
         extra_kwargs = {"password": {"write_only": True}}
+        
+    def validate_email(self, value):
+        """Validate if user with this email already exists"""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                {"email": "duplicated_email"}
+            )
+        return value
 
     def create(self, validated_data):
-        avatar = validated_data.pop("avatar", None)
-        last_password = validated_data.pop("last_password", None)
-        name = validated_data.pop("name", None)
+        
+        # Get text data from validated data
+        last_password = validated_data.get("last_password", None)
+        name = validated_data.get("name", None)
+        email = validated_data.get("email")
+        password = validated_data.get("password")
+        
+        # Get avatar as image field
+        avatar = validated_data.get("avatar")
 
+        # Create new user
         user = User.objects.create_user(
-            username=validated_data["email"],
-            email=validated_data.get("email"),
-            password=validated_data["password"],
+            username=email,
+            email=email,
+            password=password,
             is_active=False,  # ⬅ user can’t log in until activation
         )
 

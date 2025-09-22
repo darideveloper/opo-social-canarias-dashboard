@@ -38,7 +38,7 @@ class RegisterView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        serializer = serializers.RegisterSerializer(data=request.POST)
+        serializer = serializers.RegisterSerializer(data=request.data)
         if serializer.is_valid():
 
             # Create data and get profile
@@ -69,20 +69,26 @@ class RegisterView(APIView):
 
             # return reponse
             user = serializer.save()
-            message = "Account created successfully."
-            message += " Please check your email to activate your account."
+            message = "account_created"
             return Response(
                 {
+                    "status": "ok",
                     "message": message,
-                    "user": {
-                        "username": user.username,
+                    "data": {
                         "email": user.email,
                     },
                 },
                 status=status.HTTP_201_CREATED,
             )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {
+                "status": "error",
+                "message": "invalid_data",
+                "data": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class ActivateAccountView(APIView):
