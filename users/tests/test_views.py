@@ -128,7 +128,6 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
 
         self.data = {
             "name": "Sample name",
-            "username": "test_user_email",
             "password": "testpassword",
             "email": "test_user_email@gmail.com",
             "avatar": avatar_file,
@@ -139,8 +138,17 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
 class RegisterUserTestCase(RegisterBaseTestsCase):
     """Test user creation behavior"""
 
-    def test_create_user_full_info(self):
-        """Test that a user is created"""
+    def test_create_user(self):
+        """
+        Test that a user is created
+
+        Expects:
+            - A user is created
+            - The response is a 201 CREATED
+            - The response data has the correct email
+            - User created
+            - Avatar is attached to the user
+        """
 
         # Submit data as multipart form (required for file uploads)
         response = self.client.post(
@@ -152,60 +160,164 @@ class RegisterUserTestCase(RegisterBaseTestsCase):
         # Validate user created correctly
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # Validate response data
+        response_data = response.data
+        self.assertEqual(response_data["status"], "ok")
+        self.assertEqual(response_data["message"], "account_created")
+        self.assertEqual(response_data["data"]["email"], self.data["email"])
+
+        # Valdiate user created and has correct username
+        user = User.objects.get(email=self.data["email"])
+        self.assertEqual(user.username, self.data["email"])
+
+        # Validate avatar is attached
+        self.assertNotEqual(user.profile.profile_img.name, "")
+
     def test_create_user_without_avatar(self):
-        """Test that a user is created even if there's no avatar"""
+        """
+        Test that a user is created even if there's no avatar
 
-        data = {
-            "name": "Sample name",
-            "username": "test_user_email",
-            "password": "testpassword",
-            "email": "test_user_email@gmail.com",
-            "last_password": "test last password",
-        }
+        Expects:
+            - A user is created
+            - The response is a 201 CREATED
+            - The response data has the correct email
+            - User created
+            - Avatar is not attached to the user
+        """
 
-        # Submit data as multipart form (required for file uploads)
+        del self.data["avatar"]
+
+        # Submit data as multipart form (required for file uploads) without avatar
         response = self.client.post(
             self.endpoint,
-            data,  # Don't use urlencode for multipart
+            self.data,  # Don't use urlencode for multipart
             format="multipart",  # Use multipart for file uploads
         )
 
         # Validate user created correctly
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_user_missing_info(self):
-        """Test that an error is received when there's missing fields"""
+        # Validate response data
+        response_data = response.data
+        self.assertEqual(response_data["status"], "ok")
+        self.assertEqual(response_data["message"], "account_created")
+        self.assertEqual(response_data["data"]["email"], self.data["email"])
 
-        data = {
-            "username": "test_user_email",
-            "password": "testpassword",
-            "email": "test_user_email@gmail.com",
-        }
+        # Validate user created and has correct username
+        user = User.objects.get(email=self.data["email"])
+        self.assertEqual(user.username, self.data["email"])
+
+        # Validate avatar is not attached
+        self.assertEqual(user.profile.profile_img.name, "")
+
+    def test_create_user_missing_info(self):
+        """
+        Test that an error is received when there's missing required fields
+        (missing name)
+
+        Expects:
+            - An error is received when there's missing required fields (missing name)
+            - The response is a 400 BAD REQUEST
+            - The error message is "Invalid data"
+            - The error message has the required fields
+            - User is not created
+        """
+
+        del self.data["name"]
 
         # Submit data as multipart form (required for file uploads)
         response = self.client.post(
             self.endpoint,
-            data,  # Don't use urlencode for multipart
+            self.data,  # Don't use urlencode for multipart
             format="multipart",  # Use multipart for file uploads
         )
 
         # Validate user is not created
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Validata response data
+        response_data = response.data
+        self.assertEqual(response_data["status"], "error")
+        self.assertEqual(response_data["message"], "invalid_data")
+        self.assertIn("name", response_data["data"])
+
+        # Validate user is not created
+        user = User.objects.filter(email=self.data["email"])
+        self.assertFalse(user.exists())
 
     def test_create_user_no_info(self):
-        """Test that an error is received when there's no data"""
+        """
+        Test that an error is received when there's no data
 
-        data = {}
+        Expects:
+            - An error is received when there's no data
+            - The response is a 400 BAD REQUEST
+            - The error message is "Invalid data"
+            - The error message has the required fields
+            - User is not created
+        """
 
         # Submit data as multipart form (required for file uploads)
+        # Submit empty data
         response = self.client.post(
             self.endpoint,
-            data,  # Don't use urlencode for multipart
+            {},  # Don't use urlencode for multipart
             format="multipart",  # Use multipart for file uploads
         )
 
         # Validate user is not created
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Validata response data
+        response_data = response.data
+        self.assertEqual(response_data["status"], "error")
+        self.assertEqual(response_data["message"], "invalid_data")
+        self.assertIn("name", response_data["data"])
+        self.assertIn("password", response_data["data"])
+        self.assertIn("email", response_data["data"])
+
+        # Validate user is not created
+        user = User.objects.filter(email=self.data["email"])
+        self.assertFalse(user.exists())
+
+    def test_create_user_with_existing_email(self):
+        """
+        Test that an error is received when a user with an existing email is created
+
+        Expects:
+            - An error is received when a user with an existing email is created
+            - The response is a 400 BAD REQUEST
+            - The error message is "User with this email already exists."
+            - The error message has the "email" field
+            - User is not duplicated
+        """
+
+        # Create a user with the same email
+        email = self.data["email"]
+        User.objects.create_user(
+            username=email,
+            password="testpassword",
+            email=email,
+        )
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(
+            self.endpoint,
+            self.data,
+            format="multipart",
+        )
+
+        # Validate user is not created
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Validate error message
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "invalid_data")
+        self.assertIn("duplicated_email", str(response.data["data"]["email"]))
+
+        # Validate user is not created
+        users = User.objects.filter(email=self.data["email"])
+        self.assertEqual(users.count(), 1)
 
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
