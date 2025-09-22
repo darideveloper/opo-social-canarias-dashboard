@@ -373,7 +373,7 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
         self.assertEqual(email.subject, "Activate your account")
         self.assertEqual(email.to, [self.data["email"]])
         self.assertIn("/auth/activate/", email.body)
-        self.assertIn("Hi " + self.data["username"].replace("_", " "), email.body)
+        self.assertIn("Hi " + self.data["name"], email.body)
 
         # Validate activation token
         soup = BeautifulSoup(email.alternatives[0][0], "html.parser")
