@@ -445,10 +445,9 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         )
 
         self.data = {
-            "username": "test_user_activate",
             "password": "testpassword",
             "email": "test_user_activate@gmail.com",
-            "last_password": "test last password",
+            "name": "Test User Activate",
         }
 
         # Create user and get sign up token
