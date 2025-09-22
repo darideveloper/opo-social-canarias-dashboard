@@ -108,7 +108,7 @@ class CustomJWTViewTests(APITestCase):
 
 
 class RegisterBaseTestsCase(BaseTestApiViewsMethods):
-    """Test activation email behavior in the register view"""
+    """General settings to test register endpoint"""
 
     def setUp(self):
         super().setUp(
@@ -134,6 +134,10 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             "avatar": avatar_file,
             "last_password": "test last password",
         }
+
+
+class RegisterUserTestCase(RegisterBaseTestsCase):
+    """Test user creation behavior"""
 
     def test_create_user_full_info(self):
         """Test that a user is created"""
@@ -185,7 +189,7 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             format="multipart",  # Use multipart for file uploads
         )
 
-        # Validate user created correctly
+        # Validate user is not created
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_user_no_info(self):
@@ -200,7 +204,7 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             format="multipart",  # Use multipart for file uploads
         )
 
-        # Validate user created correctly
+        # Validate user is not created
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
