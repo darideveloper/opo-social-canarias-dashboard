@@ -368,7 +368,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": PAGE_SIZE,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "EXCEPTION_HANDLER": "utils.handlers.custom_exception_handler",

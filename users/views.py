@@ -4,7 +4,7 @@ from django.conf import settings
 
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -178,9 +178,7 @@ class ResetPasswordView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        serializer = serializers.ResetPasswordSerializer(
-            data=request.data
-        )
+        serializer = serializers.ResetPasswordSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save()
@@ -221,4 +219,3 @@ class DeleteAccountView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-    
