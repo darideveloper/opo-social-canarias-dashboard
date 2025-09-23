@@ -62,7 +62,7 @@ class RegisterView(APIView):
                     "Your account has been created successfully.",
                     "Just one more step to start using it.",
                 ],
-                cta_link=f"{settings.HOST}/auth/activate/{id_token}/",
+                cta_link=f"{settings.FRONTEND_URL}/auth/activate/{id_token}/",
                 cta_text="Activate Now",
                 to_email=serializer.validated_data["email"],
             )
@@ -146,7 +146,7 @@ class RecoverPasswordView(APIView):
                 subject="Recover your password",
                 name=profile.name,
                 texts=["Please click the link below to recover your password."],
-                cta_link=f"{settings.HOST}/auth/reset/{id_token}/",
+                cta_link=f"{settings.FRONTEND_URL}/auth/reset/{id_token}/",
                 cta_text="Recover Now",
                 to_email=serializer.validated_data["email"],
             )

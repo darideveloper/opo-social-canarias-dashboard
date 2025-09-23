@@ -368,6 +368,7 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
         self.assertEqual(email.subject, "Activate your account")
         self.assertEqual(email.to, [self.data["email"]])
         self.assertIn("/auth/activate/", email.body)
+        self.assertIn(settings.FRONTEND_URL, email.body)
         self.assertIn("Hi " + self.data["name"], email.body)
 
         # Validate activation token
@@ -575,7 +576,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
 class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
     """
-    Test recover password behavior in the recover password view
+    Test recover password (request email with recovery token)
     """
 
     def setUp(self):
@@ -654,6 +655,7 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         recover_link = soup.select_one("a.cta")["href"]
         self.assertIn("/auth/reset/", recover_link)
         self.assertIn(recover_token, recover_link)
+        self.assertIn(settings.FRONTEND_URL, recover_link)
 
     def test_invalid_email(self):
         """
