@@ -63,9 +63,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             username=email,
             email=email,
-            password=password,
-            is_active=False,  # ⬅ user can’t log in until activation
+            is_active=True,  # ⬅ user can’t log in until activation
         )
+        user.set_password(password)
+        user.save()
 
         models.Profile.objects.create(
             user=user, name=name, profile_img=avatar, last_pass=last_password

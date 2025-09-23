@@ -46,7 +46,11 @@ urlpatterns = [
         users_views.ResetPasswordView.as_view(),
         name="reset_password",
     ),
-    
+    path(
+        "auth/delete/",
+        users_views.DeleteAccountView.as_view(),
+        name="delete_account",
+    ),
     # Crud endpoints
     path("api/", include(router.urls)),
 ]

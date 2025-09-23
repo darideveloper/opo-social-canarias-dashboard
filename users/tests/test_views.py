@@ -123,6 +123,7 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
                 name="avatar.png", content=f.read(), content_type="image/png"
             )
 
+        # Data
         self.data = {
             "name": "Sample name",
             "password": "testpassword",
@@ -130,6 +131,9 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             "avatar": avatar_file,
             "last_password": "test last password",
         }
+
+        # Additional apis
+        self.token_obtain_url = "/auth/token/"
 
 
 class RegisterUserTestCase(RegisterBaseTestsCase):
@@ -315,6 +319,28 @@ class RegisterUserTestCase(RegisterBaseTestsCase):
         # Validate user is not created
         users = User.objects.filter(email=self.data["email"])
         self.assertEqual(users.count(), 1)
+
+    def test_login_after_register(self):
+        """
+        Test that a user can login after registering
+        """
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(self.endpoint, self.data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Simulate account activation
+        user = User.objects.get(email=self.data["email"])
+        user.is_active = True
+        user.save()
+
+        # Validate user can login with jwt libs
+        response = self.client.post(
+            self.token_obtain_url,
+            {"username": self.data["email"], "password": self.data["password"]},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data)
 
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
@@ -761,7 +787,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Validate user password
         user = User.objects.get(email=self.profile.user.email)
         self.assertTrue(user.check_password(new_password))
-        
+
         # Validate token is disabled
         self.token.refresh_from_db()
         self.assertFalse(self.token.is_active)
@@ -838,7 +864,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Validate token still disabled
         self.token.refresh_from_db()
         self.assertFalse(self.token.is_active)
-        
+
     def test_missing_data(self):
         """
         Test reset password with missing data
@@ -848,7 +874,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
             - The status is error
             - The message is Invalid token.
         """
-        
+
         # Submit data as a post json
         response = self.client.post(self.endpoint, {})
         self.__validate_error_response(response)
@@ -856,7 +882,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Validate required fields in response
         self.assertIn("token", response.data["data"])
         self.assertIn("new_password", response.data["data"])
-        
+
         # Validate token is active (unused)
         self.token.refresh_from_db()
         self.assertTrue(self.token.is_active)

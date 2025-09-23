@@ -68,7 +68,6 @@ class RegisterView(APIView):
             )
 
             # return reponse
-            user = serializer.save()
             return Response(
                 {
                     "status": "ok",
@@ -202,3 +201,24 @@ class ResetPasswordView(APIView):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class DeleteAccountView(APIView):
+    """
+    Delete account by token with success or error message
+    """
+
+    def post(self, request):
+        """Delete account"""
+        user = request.user
+        user.delete()
+
+        return Response(
+            {
+                "status": "ok",
+                "message": "account_deleted",
+                "data": {},
+            },
+            status=status.HTTP_200_OK,
+        )
+    
