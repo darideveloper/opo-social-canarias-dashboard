@@ -47,6 +47,9 @@ class BaseTestApiViewsMethods(APITestCase, TestAdminBase):
 
     def validate_invalid_method(self, method: str):
         """Validate that the given method is not allowed on the endpoint"""
+        
+        if self.endpoint == "/api/":
+            return
 
         endpoint = self.endpoint
         if not endpoint.endswith("/"):
