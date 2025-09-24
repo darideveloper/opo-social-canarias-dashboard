@@ -461,8 +461,8 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
     def setUp(self):
         super().setUp(
-            endpoint="/auth/activate/{token}/",
-            restricted_get=False,
+            endpoint="/auth/activate/",
+            restricted_post=False,
         )
 
         self.data = {
@@ -473,7 +473,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
         # Create user and get sign up token
         self.token = self.__register_default_user()
-        
+
         # Setup endpoints
         self.token_obtain_url = "/auth/token/"
 
@@ -532,14 +532,14 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         """
 
         # Validate response
-        response = self.client.get(self.endpoint.format(token=self.token))
+        response = self.client.post(self.endpoint, {"token": self.token}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "ok")
         self.assertEqual(response.data["message"], "account_activated")
 
         # Validate token disable and user activated
         self.__validate_token_user(token_is_active=False, user_is_active=True)
-        
+
         # Validate use can login with jwt
         response = self.client.post(
             self.token_obtain_url,
@@ -558,7 +558,9 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         """
 
         # Validate response
-        response = self.client.get(self.endpoint.format(token="invalid_token"))
+        response = self.client.post(
+            self.endpoint, {"token": "invalid_token"}, format="json"
+        )
         self.__validate_response_error(response)
 
         # Validate user is not activated and token still active
@@ -580,7 +582,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         token.save()
 
         # Validate response
-        response = self.client.get(self.endpoint.format(token=self.token))
+        response = self.client.post(self.endpoint, {"token": self.token}, format="json")
         self.__validate_response_error(response)
 
         # Validate user is not activated and token still active
@@ -602,7 +604,7 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         token.save()
 
         # Validate response
-        response = self.client.get(self.endpoint.format(token=self.token))
+        response = self.client.post(self.endpoint, {"token": self.token}, format="json")
         self.__validate_response_error(response)
 
         # Validate user is not activated and token still disabled

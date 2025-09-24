@@ -92,8 +92,8 @@ class ActivateAccountView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def get(self, request, token):
-        serializer = serializers.ActivateAccountSerializer(data={"token": token})
+    def post(self, request):
+        serializer = serializers.ActivateAccountSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(

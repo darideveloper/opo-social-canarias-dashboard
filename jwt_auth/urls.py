@@ -17,7 +17,7 @@ urlpatterns = [
         name="token_refresh",
     ),
     path(
-        "activate/<str:token>/",
+        "activate/",
         auth_views.ActivateAccountView.as_view(),
         name="activate_account",
     ),
