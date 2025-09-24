@@ -46,6 +46,30 @@ class UserMeView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    def put(self, request):
+        """Update user profile"""
+        serializer = serializers.UserMeSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "status": "ok",
+                    "message": "user_profile_updated",
+                    "data": {},
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "status": "error",
+                "message": "invalid_data",
+                "data": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     def delete(self, request):
         """Delete account"""
         user = request.user

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from rest_framework.response import Response
 from rest_framework import status
 
 from core.tests_base.test_views import BaseTestApiViewsMethods
@@ -56,6 +57,69 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
         self.access_token = response.data["data"]["access"]
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
+
+        # Setup data
+        new_name = "New Name"
+        new_profile_img_path = os.path.join(
+            settings.BASE_DIR, "media", "test", "avatar.png"
+        )
+        with open(new_profile_img_path, "rb") as f:
+            new_profile_img = SimpleUploadedFile(
+                name="new_avatar.png", content=f.read(), content_type="image/png"
+            )
+        new_password = "new_password"
+
+        self.update_data = {
+            "name": new_name,
+            "profile_img": new_profile_img,
+            "password": new_password,
+        }
+
+        # Additional apis
+        self.token_obtain_url = "/auth/token/"
+
+    def __validate_update_data(
+        self,
+        response: Response,
+        check_name: bool = True,
+        check_avatar: bool = True,
+        check_password: bool = True,
+    ):
+        """
+        Validate update data
+
+        Args:
+            response: Response object
+            check_name: bool to check if name is updated
+            check_avatar: bool to check if avatar is updated
+            check_password: bool to check if password is updated
+        """
+        # Validate response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "ok")
+        self.assertEqual(response.data["message"], "user_profile_updated")
+
+        # Validate updated data in db
+        self.profile.refresh_from_db()
+        self.user.refresh_from_db()
+        if check_name:
+            self.assertEqual(self.profile.name, self.update_data["name"])
+        if check_avatar:
+            self.assertTrue(self.profile.profile_img.name.endswith(".png"))
+            self.assertIn("new_avatar", self.profile.profile_img.name)
+
+        # Try to login with new password
+        if check_password:
+            response = self.client.post(
+                self.token_obtain_url,
+                {
+                    "username": self.user.username,
+                    "password": self.update_data["password"],
+                },
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data["status"], "ok")
+            self.assertEqual(response.data["message"], "generated")
 
     def test_delete_account(self):
         """
@@ -161,3 +225,119 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
         self.assertTrue(data["profile_img"].startswith("http"))
         self.assertTrue(data["profile_img"].endswith(".png"))
         self.assertIn("avatar", data["profile_img"])
+
+    def test_put_user_profile(self):
+        """
+        Test put user profile (update full data)
+        Expects:
+            - The response is a 200 OK
+            - The status is ok
+            - The message is user_profile_updated
+            - Name is updated
+            - Profile image is updated
+            - Password is updated
+        """
+
+        # Setup new data
+
+        # validate response (submit data as put html form)
+        response = self.client.put(
+            self.endpoint,
+            self.update_data,
+            format="multipart",
+        )
+        self.__validate_update_data(response)
+
+    def test_put_user_profile_missing_name(self):
+        """
+        Test put user profile missing name
+        Expects:
+            - The response is a 200 ok
+            - The status is ok
+            - Name no updated but other data is updated
+        """
+
+        # Remove name from data
+        new_name = self.update_data.pop("name")
+
+        response = self.client.put(
+            self.endpoint,
+            self.update_data,
+            format="multipart",
+        )
+        self.__validate_update_data(response, check_name=False)
+
+        self.assertNotEqual(self.profile.name, new_name)
+
+    def test_put_user_profile_missing_avatar(self):
+        """
+        Test put user profile missing avatar
+        Expects:
+            - The response is a 200 ok
+            - The status is ok
+            - Avatar no updated but other data is updated
+        """
+
+        # Remove avatar from data
+        self.update_data.pop("profile_img")
+
+        response = self.client.put(
+            self.endpoint,
+            self.update_data,
+            format="multipart",
+        )
+        self.__validate_update_data(response, check_avatar=False)
+
+        self.assertNotIn("new_avatar", self.profile.profile_img.name)
+
+    def test_put_user_profile_missing_password(self):
+        """
+        Test put user profile missing password
+        Expects:
+            - The response is a 200 ok
+            - The status is ok
+            - Password no updated but other data is updated
+                (cannot login with new password)
+        """
+
+        # Remove password from data
+        new_password = self.update_data.pop("password")
+
+        response = self.client.put(
+            self.endpoint,
+            self.update_data,
+            format="multipart",
+        )
+        self.__validate_update_data(response, check_password=False)
+
+        # Trt to login and confirm error
+        response = self.client.post(
+            self.token_obtain_url,
+            {
+                "username": self.user.username,
+                "password": new_password,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["status"], "error")
+        
+    def test_put_user_profile_missing_data(self):
+        """
+        Test put user profile missing data
+        Expects:
+            - The response is a 400 BAD REQUEST
+            - The status is error
+            - The message is invalid_data
+        """
+        
+        response = self.client.put(
+            self.endpoint,
+            {},
+            format="multipart",
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "Invalid data")
+        self.assertIn("fields", response.data["data"])
+        self.assertEqual(response.data["data"]["fields"], "no_data")
