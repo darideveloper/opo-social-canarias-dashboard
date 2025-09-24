@@ -31,9 +31,9 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
+    email = serializers.EmailField(required=True)
     last_password = serializers.CharField(required=False, write_only=True)
     name = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
@@ -48,16 +48,16 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def create(self, validated_data):
+    def save(self):
         
         # Get text data from validated data
-        last_password = validated_data.get("last_password", None)
-        name = validated_data.get("name", None)
-        email = validated_data.get("email")
-        password = validated_data.get("password")
+        last_password = self.validated_data.get("last_password", None)
+        name = self.validated_data.get("name", None)
+        email = self.validated_data.get("email")
+        password = self.validated_data.get("password")
         
         # Get avatar as image field
-        avatar = validated_data.get("avatar")
+        avatar = self.validated_data.get("avatar")
 
         # Create new user
         user = User.objects.create_user(
