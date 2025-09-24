@@ -611,19 +611,22 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
         self.__validate_token_user(token_is_active=False, user_is_active=False)
 
 
-class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
+class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
     """
-    Test recover password (request email with recovery token)
+    Test password reset functionality:
+    - POST: Request password recovery by email (with token)
+    - PUT: Reset password by token
     """
 
     def setUp(self):
         super().setUp(
-            endpoint="/auth/recover/",
+            endpoint="/auth/password/reset/",
             restricted_post=False,
+            restricted_put=False,
         )
 
         # Create user directly in the database
-        self.email = "test_user_recover@gmail.com"
+        self.email = "test_user_reset@gmail.com"
         self.user = User.objects.create_user(
             username=self.email,
             password="testpassword",
@@ -633,31 +636,52 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Create profile directly in the database
         self.profile = models.Profile.objects.create(
             user=self.user,
-            name="Test User Recover",
+            name="Test User Reset",
         )
+
+        # Create reset password token for PUT tests
+        self.token = models.TempToken.objects.create(
+            profile=self.profile,
+            token="test_token",
+            type="pass",
+        )
+        
+        # Setup endpoints
+        self.token_obtain_url = "/auth/token/"
 
     def __validate_no_email_sent(self):
         """
         Validate that no email is sent
         """
-
         mails = mail.outbox
         self.assertEqual(len(mails), 0)
 
-    def __validate_error_response(self, response: Response):
+    def __validate_post_error_response(self, response: Response):
         """
-        Validate that the response is an error
+        Validate that the POST response is an error
 
         Args:
             response (Response): The response to validate
         """
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["status"], "error")
         self.assertEqual(response.data["message"], "error_sending_recovery_email")
         self.assertIn("email", response.data["data"])
 
-    def test_recover_password(self):
+    def __validate_put_error_response(self, response: Response):
+        """
+        Validate that the PUT response is an error
+
+        Args:
+            response (Response): The response to validate
+        """
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "error_resetting_password")
+
+    # POST Tests (Password Recovery Request)
+
+    def test_post_recover_password(self):
         """
         Test recover password
 
@@ -665,9 +689,11 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
             - The email is sent
             - The response is a 200 OK
             - The status is ok
-            - The message is Recovery email sent successfully.
+            - The message is recovery_email_sent
             - The data contains the email
         """
+        # Delete previous tokens
+        models.TempToken.objects.filter(profile=self.profile, type="pass").delete()
 
         # Submit data as a post json
         response = self.client.post(self.endpoint, {"email": self.email})
@@ -694,38 +720,36 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         self.assertIn(recover_token, recover_link)
         self.assertIn(settings.FRONTEND_URL, recover_link)
 
-    def test_invalid_email(self):
+    def test_post_invalid_email(self):
         """
         Test recover password with an invalid email
 
         Expects:
             - The response is a 400 BAD REQUEST
             - The status is error
-            - The message is Invalid email.
-            - The data an email error
+            - The message is error_sending_recovery_email
+            - The data contains email error
         """
-
         # Submit data as a post json
         response = self.client.post(self.endpoint, {"email": "invalid_email@gmail.com"})
-        self.__validate_error_response(response)
+        self.__validate_post_error_response(response)
 
         # Validate no email sent
         self.__validate_no_email_sent()
 
-    def test_missing_data(self):
+    def test_post_missing_data(self):
         """
         Test recover password with missing data
 
         Expects:
             - The response is a 400 BAD REQUEST
             - The status is error
-            - The message is Invalid email.
-            - The data an email error
+            - The message is error_sending_recovery_email
+            - The data contains email error
         """
-
         # Submit data as a post json
         response = self.client.post(self.endpoint, {})
-        self.__validate_error_response(response)
+        self.__validate_post_error_response(response)
 
         # Validate no email sent
         self.__validate_no_email_sent()
@@ -733,62 +757,23 @@ class RecoverPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Validate required fields in response
         self.assertIn("email", response.data["data"])
 
+    # PUT Tests (Password Reset)
 
-class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
-    """Test reset password behavior in the reset password view"""
-
-    def setUp(self):
-        super().setUp(
-            endpoint="/auth/reset/",
-            restricted_post=False,
-        )
-
-        # Create user directly in the database
-        self.user = User.objects.create_user(
-            username="test_user_reset",
-            password="testpassword",
-            email="test_user_reset@gmail.com",
-        )
-
-        # Create profile directly in the database
-        self.profile = models.Profile.objects.create(
-            user=self.user,
-            name="Test User Reset",
-        )
-
-        # Create reset password token
-        self.token = models.TempToken.objects.create(
-            profile=self.profile,
-            token="test_token",
-            type="pass",
-        )
-
-    def __validate_error_response(self, response: Response):
-        """
-        Validate that the response is an error
-
-        Args:
-            response (Response): The response to validate
-        """
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["status"], "error")
-        self.assertEqual(response.data["message"], "error_resetting_password")
-
-    def test_reset_password(self):
+    def test_put_reset_password(self):
         """
         Test reset password
 
         Expects:
-            - The user is reset password
+            - The user password is reset
             - The token is disabled
             - The response is a 200 OK
         """
-
-        # Submit data as a post json
+        # Submit data as a put json
         new_password = "new_password"
-        response = self.client.post(
-            self.endpoint, {"token": self.token, "new_password": new_password}
+        response = self.client.put(
+            self.endpoint,
+            {"token": self.token.token, "new_password": new_password},
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "ok")
@@ -802,93 +787,102 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Validate token is disabled
         self.token.refresh_from_db()
         self.assertFalse(self.token.is_active)
+        
+        # Validate user is active (can login)
+        response = self.client.post(
+            self.token_obtain_url,
+            {"username": self.profile.user.email, "password": new_password},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_invalid_token(self):
+    def test_put_invalid_token(self):
         """
         Test reset password with an invalid token
 
         Expects:
-            - The user is not reset password
+            - The user password is not reset
             - The token is not disabled
             - The response is a 400 BAD REQUEST
         """
-
-        # Submit data as a post json
+        # Submit data as a put json
         new_password = "new_password"
-        response = self.client.post(
-            self.endpoint, {"token": "invalid_token", "new_password": new_password}
+        response = self.client.put(
+            self.endpoint,
+            {"token": "invalid_token", "new_password": new_password},
+            format="json",
         )
-        self.__validate_error_response(response)
+        self.__validate_put_error_response(response)
 
         # Validate real token is active
         self.token.refresh_from_db()
         self.assertTrue(self.token.is_active)
 
-    def test_expired_token(self):
+    def test_put_expired_token(self):
         """
         Test reset password with an expired token
 
         Expects:
-            - The user is not reset password
+            - The user password is not reset
             - The token is not disabled
             - The response is a 400 BAD REQUEST
         """
-
         # Change created_at to 100 hours ago
-        token = models.TempToken.objects.get(token=self.token)
+        token = models.TempToken.objects.get(token=self.token.token)
         token.created_at = timezone.now() - timedelta(hours=100)
         token.save()
 
-        # Submit data as a post json
+        # Submit data as a put json
         new_password = "new_password"
-        response = self.client.post(
-            self.endpoint, {"token": self.token, "new_password": new_password}
+        response = self.client.put(
+            self.endpoint,
+            {"token": self.token.token, "new_password": new_password},
+            format="json",
         )
-        self.__validate_error_response(response)
+        self.__validate_put_error_response(response)
 
-        # Validate token its active (expired but not used)
+        # Validate token is active (expired but not used)
         self.token.refresh_from_db()
         self.assertTrue(self.token.is_active)
 
-    def test_disabled_token(self):
+    def test_put_disabled_token(self):
         """
         Test reset password with a disabled token
 
         Expects:
-            - The user is not reset password
+            - The user password is not reset
             - The token is not disabled
             - The response is a 400 BAD REQUEST
         """
-
         # Disable token
-        token = models.TempToken.objects.get(token=self.token)
+        token = models.TempToken.objects.get(token=self.token.token)
         token.is_active = False
         token.save()
 
-        # Submit data as a post json
+        # Submit data as a put json
         new_password = "new_password"
-        response = self.client.post(
-            self.endpoint, {"token": self.token, "new_password": new_password}
+        response = self.client.put(
+            self.endpoint,
+            {"token": self.token.token, "new_password": new_password},
+            format="json",
         )
-        self.__validate_error_response(response)
+        self.__validate_put_error_response(response)
 
         # Validate token still disabled
         self.token.refresh_from_db()
         self.assertFalse(self.token.is_active)
 
-    def test_missing_data(self):
+    def test_put_missing_data(self):
         """
         Test reset password with missing data
 
         Expects:
             - The response is a 400 BAD REQUEST
             - The status is error
-            - The message is Invalid token.
+            - The message is error_resetting_password
         """
-
-        # Submit data as a post json
-        response = self.client.post(self.endpoint, {})
-        self.__validate_error_response(response)
+        # Submit data as a put json
+        response = self.client.put(self.endpoint, {}, format="json")
+        self.__validate_put_error_response(response)
 
         # Validate required fields in response
         self.assertIn("token", response.data["data"])

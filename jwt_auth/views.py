@@ -114,15 +114,20 @@ class ActivateAccountView(APIView):
         )
 
 
-class RecoverPasswordView(APIView):
+class PasswordResetView(APIView):
     """
-    Request password recovery by email and send email with recovery token
+    Password reset functionality:
+    - POST: Request password recovery by email (with token)
+    - PUT: Reset password by token
     """
 
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
+        """
+        Request password recovery by email and send email with recovery token
+        """
         serializer = serializers.RecoverPasswordSerializer(data=request.data)
         if serializer.is_valid():
 
@@ -167,16 +172,10 @@ class RecoverPasswordView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
-class ResetPasswordView(APIView):
-    """
-    Reset password by token with success or error message
-    """
-
-    permission_classes = [AllowAny]
-    authentication_classes = []
-
-    def post(self, request):
+    def put(self, request):
+        """
+        Reset password by token with success or error message
+        """
         serializer = serializers.ResetPasswordSerializer(data=request.data)
 
         if serializer.is_valid():

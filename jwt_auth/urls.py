@@ -22,13 +22,8 @@ urlpatterns = [
         name="activate_account",
     ),
     path(
-        "recover/",
-        auth_views.RecoverPasswordView.as_view(),
-        name="recover_password",
-    ),
-    path(
-        "reset/",
-        auth_views.ResetPasswordView.as_view(),
-        name="reset_password",
+        "password/reset/",
+        auth_views.PasswordResetView.as_view(),
+        name="password_reset",
     ),
 ]
