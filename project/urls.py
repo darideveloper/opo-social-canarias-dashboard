@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 from rest_framework import routers
 
 from jwt_auth import urls as auth_urls
+from users import urls as user_urls
 
 # Setup drf router
 router = routers.DefaultRouter()
@@ -25,6 +26,7 @@ urlpatterns = [
     
     # Apps custom endpoints
     path("auth/", include(auth_urls)),
+    path("users/", include(user_urls)),
 ]
 
 if not settings.STORAGE_AWS:

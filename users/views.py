@@ -3,12 +3,15 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-class DeleteAccountView(APIView):
+class UserMeView(APIView):
     """
-    Delete account by token with success or error message
+    manage user own profile
+    - GET: Get user profile
+    - PUT: Update user profile
+    - DELETE: Delete user account
     """
 
-    def post(self, request):
+    def delete(self, request):
         """Delete account"""
         user = request.user
         user.delete()
