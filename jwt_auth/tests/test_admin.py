@@ -6,7 +6,7 @@ class ProfileAdminTestCase(TestAdminBase):
 
     def setUp(self):
         super().setUp()
-        self.endpoint = "/admin/users/profile/"
+        self.endpoint = "/admin/jwt_auth/profile/"
 
     def test_search_bar(self):
         """Validate search bar working"""
@@ -19,7 +19,7 @@ class TempTokenAdminTestCase(TestAdminBase):
 
     def setUp(self):
         super().setUp()
-        self.endpoint = "/admin/users/temptoken/"
+        self.endpoint = "/admin/jwt_auth/temptoken/"
 
     def test_search_bar(self):
         """Validate search bar working"""

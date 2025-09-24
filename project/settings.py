@@ -52,6 +52,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 INSTALLED_APPS = [
     # Local apps
     "core",
+    "jwt_auth",
     "users",
     # Installed apps
     "corsheaders",

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from users import models
+from jwt_auth import models
 from core.tests_base.test_views import BaseTestApiViewsMethods
 
 from bs4 import BeautifulSoup
@@ -340,7 +340,6 @@ class RegisterUserTestCase(RegisterBaseTestsCase):
             {"username": self.data["email"], "password": self.data["password"]},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.data)
 
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
@@ -474,6 +473,9 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
         # Create user and get sign up token
         self.token = self.__register_default_user()
+        
+        # Setup endpoints
+        self.token_obtain_url = "/auth/token/"
 
     def __register_default_user(self) -> str:
         """
@@ -537,6 +539,13 @@ class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
 
         # Validate token disable and user activated
         self.__validate_token_user(token_is_active=False, user_is_active=True)
+        
+        # Validate use can login with jwt
+        response = self.client.post(
+            self.token_obtain_url,
+            {"username": self.data["email"], "password": self.data["password"]},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_invalid_token(self):
         """

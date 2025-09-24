@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
 
-from users import views as users_views
+from jwt_auth import urls as auth_urls
 
 # Setup drf router
 router = routers.DefaultRouter()
@@ -19,40 +19,12 @@ urlpatterns = [
         RedirectView.as_view(url="/admin/"),
         name="login-redirect-admin",
     ),
-    # Auth
-    path("auth/register/", users_views.RegisterView.as_view(), name="auth_register"),
-    path(
-        "auth/token/",
-        users_views.CustomTokenObtainPairView.as_view(),
-        name="token_obtain_pair",
-    ),
-    path(
-        "auth/token/refresh/",
-        users_views.CustomTokenRefreshView.as_view(),
-        name="token_refresh",
-    ),
-    path(
-        "auth/activate/<str:token>/",
-        users_views.ActivateAccountView.as_view(),
-        name="activate_account",
-    ),
-    path(
-        "auth/recover/",
-        users_views.RecoverPasswordView.as_view(),
-        name="recover_password",
-    ),
-    path(
-        "auth/reset/",
-        users_views.ResetPasswordView.as_view(),
-        name="reset_password",
-    ),
-    path(
-        "auth/delete/",
-        users_views.DeleteAccountView.as_view(),
-        name="delete_account",
-    ),
+    
     # Crud endpoints
     path("api/", include(router.urls)),
+    
+    # Apps custom endpoints
+    path("auth/", include(auth_urls)),
 ]
 
 if not settings.STORAGE_AWS:
