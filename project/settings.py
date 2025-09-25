@@ -22,7 +22,7 @@ LANGUAGE_CODE = os.getenv("LANGUAGE_CODE")
 TIME_ZONE = os.getenv("TIME_ZONE")
 ACCESS_TOKEN_LIFETIME = int(os.getenv("ACCESS_TOKEN_LIFETIME_MINUTES"))
 REFRESH_TOKEN_LIFETIME = int(os.getenv("REFRESH_TOKEN_LIFETIME_HOURS"))
-STORAGE_AWS = os.environ.get("STORAGE_AWS") == "True"
+AWS_STORAGE = os.environ.get("AWS_STORAGE") == "True"
 HOST = os.getenv("HOST")
 TEST_HEADLESS = os.getenv("TEST_HEADLESS", "False") == "True"
 PAGE_SIZE = int(os.getenv("PAGE_SIZE", 10))
@@ -39,7 +39,7 @@ CUSTOM_TOKENS_LIFETIME_HOURS = int(os.getenv("CUSTOM_TOKENS_LIFETIME_HOURS"))
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 print(f"DEBUG: {DEBUG}")
-print(f"STORAGE_AWS: {STORAGE_AWS}")
+print(f"AWS_STORAGE: {AWS_STORAGE}")
 print(f"HOST: {HOST}")
 
 # Quick-start development settings - unsuitable for production
@@ -324,7 +324,7 @@ if os.getenv("CSRF_TRUSTED_ORIGINS") != "None":
 
 
 # Storage settings
-if STORAGE_AWS:
+if AWS_STORAGE:
     # aws settings
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
