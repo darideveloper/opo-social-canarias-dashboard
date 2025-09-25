@@ -41,7 +41,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         
     def validate_email(self, value):
         """Validate if user with this email already exists"""
-        if User.objects.filter(email=value).exists():
+        if User.objects.filter(email=value, is_active=True).exists():
             raise serializers.ValidationError(
                 {"email": "duplicated_email"}
             )
@@ -56,16 +56,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         
         # Get avatar as image field
         avatar = self.validated_data.get("avatar")
-
-        # Create new user
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            is_active=False,  # ⬅ user can’t log in until activation
-        )
+        
+        # Get inactive user (if already registered)
+        user = User.objects.filter(email=email, is_active=False)
+        
+        if user.exists():
+            # Overwrite user in second register if not active
+            user = user.first()
+            user.username = email
+        else:
+            # Create new user if first register
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                is_active=False,
+            )
+            
         user.set_password(password)
         user.save()
 
+        # Delete old profiles
+        models.Profile.objects.filter(user=user).delete()
+        
+        # Create new profile
         models.Profile.objects.create(
             user=user, name=name, profile_img=avatar
         )
