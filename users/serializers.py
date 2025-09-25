@@ -25,8 +25,17 @@ class UserMeSerializer(serializers.Serializer):
         if validated_data.get("profile_img", None):
             profile.profile_img = validated_data["profile_img"]
         if validated_data.get("password", None):
-            user.set_password(validated_data["password"])
+            
+            new_pass = validated_data["password"]
+            
+            # Validtae that new password its different from new
+            if (user.check_password(new_pass)):
+                raise serializers.ValidationError({"password": "same_pass"})
+            
+            # Update password
+            user.set_password(new_pass)
             user.save()
+            
         profile.save()
         
         # return profile

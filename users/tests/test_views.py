@@ -26,11 +26,11 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
         )
 
         # Create user and setup credentials
-        password = "test_password"
+        self.password = "test_password"
         self.user = User.objects.create_user(
             username="test_user_me@gmail.com",
             email="test_user_me@gmail.com",
-            password=password,
+            password=self.password,
             is_active=True,
         )
 
@@ -52,7 +52,7 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
 
         response = self.client.post(
             "/auth/token/",
-            {"username": self.user.username, "password": password},
+            {"username": self.user.username, "password": self.password},
         )
         self.access_token = response.data["data"]["access"]
 
@@ -77,6 +77,33 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
 
         # Additional apis
         self.token_obtain_url = "/auth/token/"
+
+    def __validate_login(self, can_login: bool = True, password: str = None):
+        """
+        Validate login
+
+        Args:
+            can_login: bool to check if login is successful
+            password: str to check if password is correct
+        """
+
+        if not password:
+            password = self.update_data["password"]
+
+        response = self.client.post(
+            self.token_obtain_url,
+            {
+                "username": self.user.username,
+                "password": password,
+            },
+        )
+        if can_login:
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data["status"], "ok")
+            self.assertEqual(response.data["message"], "generated")
+        else:
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+            self.assertEqual(response.data["status"], "error")
 
     def __validate_update_data(
         self,
@@ -110,16 +137,32 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
 
         # Try to login with new password
         if check_password:
-            response = self.client.post(
-                self.token_obtain_url,
-                {
-                    "username": self.user.username,
-                    "password": self.update_data["password"],
-                },
+            self.__validate_login(can_login=True, password=self.update_data["password"])
+
+    def __validate_data_no_updated(
+        self, response: Response, check_password: bool = True
+    ):
+        """
+        Validate that the data is not updated
+
+        Args:
+            response: Response object
+            check_password: bool to check if password is updated
+        """
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "error")
+
+        # Validate data no updated
+        self.profile.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertNotEqual(self.profile.name, self.update_data["name"])
+        self.assertNotEqual(self.profile.profile_img, self.update_data["profile_img"])
+
+        # Validate user cannot login with new password
+        if check_password:
+            self.__validate_login(
+                can_login=False, password=self.update_data["password"]
             )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data["status"], "ok")
-            self.assertEqual(response.data["message"], "generated")
 
     def test_delete_account(self):
         """
@@ -311,16 +354,8 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
         self.__validate_update_data(response, check_password=False)
 
         # Trt to login and confirm error
-        response = self.client.post(
-            self.token_obtain_url,
-            {
-                "username": self.user.username,
-                "password": new_password,
-            },
-        )
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.data["status"], "error")
-        
+        self.__validate_login(can_login=False, password=new_password)
+
     def test_put_user_profile_missing_data(self):
         """
         Test put user profile missing data
@@ -329,15 +364,42 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
             - The status is error
             - The message is invalid_data
         """
-        
+
         response = self.client.put(
             self.endpoint,
             {},
             format="multipart",
         )
-        
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["status"], "error")
+
+        # valdiate error message
         self.assertEqual(response.data["message"], "Invalid data")
         self.assertIn("fields", response.data["data"])
         self.assertEqual(response.data["data"]["fields"], "no_data")
+        
+        # Validate data no updated
+        self.__validate_data_no_updated(response, check_password=False)
+
+    def test_put_same_password(self):
+        """
+        Test put user profile, using the same current password
+        Expects:
+            - The response is a 400 BAD REQUEST
+            - The status is error
+            - The message is same_pass
+        """
+
+        # Use same password
+        self.update_data["password"] = self.password
+        response = self.client.put(
+            self.endpoint,
+            self.update_data,
+            format="multipart",
+        )
+        
+        # Validate error message
+        self.assertEqual(response.data["message"], "Invalid data")
+        self.assertIn("password", response.data["data"])
+        self.assertEqual(response.data["data"]["password"], "same_pass")
+
+        # Validate data no updated
+        self.__validate_data_no_updated(response, check_password=False)
