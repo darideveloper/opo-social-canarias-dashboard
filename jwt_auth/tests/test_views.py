@@ -113,9 +113,34 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
             restricted_post=False,
         )
 
+        # Additional apis
+        self.token_obtain_url = "/auth/token/"
+
+        # Get default data
+        self.data = self.get_data()
+
+    def get_data(
+        self,
+        name: str = "Sample name",
+        password: str = "testpassword",
+        email: str = "test_user_email@gmail.com",
+        avatar_file_name: str = "avatar.png",
+    ) -> dict:
+        """
+        Get data for register
+
+        Returns:
+            dict: Data for register
+                - name: str
+                - password: str
+                - email: str
+                - avatar: SimpleUploadedFile
+                - last_password: str
+        """
+
         # Get the path to your avatar file
         project_path = settings.BASE_DIR
-        avatar_path = os.path.join(project_path, "media", "test", "avatar.png")
+        avatar_path = os.path.join(project_path, "media", "test", avatar_file_name)
 
         # Open the actual file and create a SimpleUploadedFile
         with open(avatar_path, "rb") as f:
@@ -123,17 +148,13 @@ class RegisterBaseTestsCase(BaseTestApiViewsMethods):
                 name="avatar.png", content=f.read(), content_type="image/png"
             )
 
-        # Data
-        self.data = {
-            "name": "Sample name",
-            "password": "testpassword",
-            "email": "test_user_email@gmail.com",
+        # Data formatted data
+        return {
+            "name": name,
+            "password": password,
+            "email": email,
             "avatar": avatar_file,
-            "last_password": "test last password",
         }
-
-        # Additional apis
-        self.token_obtain_url = "/auth/token/"
 
 
 class RegisterUserTestCase(RegisterBaseTestsCase):
@@ -340,6 +361,42 @@ class RegisterUserTestCase(RegisterBaseTestsCase):
             {"username": self.data["email"], "password": self.data["password"]},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_register_second_time(self):
+        """
+        Test that a user can register again after registering (overwrite user)
+        if the account is not active
+
+        Expects:
+            - A user is created
+            - The response is a 201 CREATED
+            - The response data has the correct email
+            - User created
+            - Avatar is attached to the user
+        """
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(self.endpoint, self.data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Second register with diferent data (but keep email)
+        new_data = self.get_data(
+            name="New name", password="newpassword", avatar_file_name="new_avatar.png"
+        )
+        response = self.client.post(self.endpoint, new_data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Validate user is overwritten
+        user = User.objects.get(email=self.data["email"])
+        self.assertEqual(user.username, self.data["email"])
+
+        # Validate user and profile in database
+        users = User.objects.filter(email=self.data["email"])
+        self.assertEqual(users.count(), 1)
+        
+        # Validate second register data
+        user.profile.refresh_from_db()
+        self.assertEqual(user.profile.name, new_data["name"])
 
 
 class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
@@ -645,7 +702,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
             token="test_token",
             type="pass",
         )
-        
+
         # Setup endpoints
         self.token_obtain_url = "/auth/token/"
 
@@ -787,7 +844,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         # Validate token is disabled
         self.token.refresh_from_db()
         self.assertFalse(self.token.is_active)
-        
+
         # Validate user is active (can login)
         response = self.client.post(
             self.token_obtain_url,
