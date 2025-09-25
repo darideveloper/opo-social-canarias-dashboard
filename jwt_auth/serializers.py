@@ -32,12 +32,11 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
     email = serializers.EmailField(required=True)
-    last_password = serializers.CharField(required=False, write_only=True)
     name = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = ["email", "password", "avatar", "last_password", "name"]
+        fields = ["email", "password", "avatar", "name"]
         extra_kwargs = {"password": {"write_only": True}}
         
     def validate_email(self, value):
@@ -51,7 +50,6 @@ class RegisterSerializer(serializers.ModelSerializer):
     def save(self):
         
         # Get text data from validated data
-        last_password = self.validated_data.get("last_password", None)
         name = self.validated_data.get("name", None)
         email = self.validated_data.get("email")
         password = self.validated_data.get("password")
@@ -69,7 +67,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         models.Profile.objects.create(
-            user=user, name=name, profile_img=avatar, last_pass=last_password
+            user=user, name=name, profile_img=avatar
         )
         return user
 
