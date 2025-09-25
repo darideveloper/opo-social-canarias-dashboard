@@ -25,7 +25,7 @@ REFRESH_TOKEN_LIFETIME = int(os.getenv("REFRESH_TOKEN_LIFETIME_HOURS"))
 AWS_STORAGE = os.environ.get("AWS_STORAGE") == "True"
 HOST = os.getenv("HOST")
 TEST_HEADLESS = os.getenv("TEST_HEADLESS", "False") == "True"
-PAGE_SIZE = int(os.getenv("PAGE_SIZE", 10))
+REST_FRAMEWORK_PAGE_SIZE = int(os.getenv("REST_FRAMEWORK_PAGE_SIZE", 10))
 BAR_CHART_ENDPOINT = os.getenv("BAR_CHART_ENDPOINT")
 SITE_TITLE = os.getenv("SITE_TITLE")
 SITE_BRAND = os.getenv("SITE_BRAND")
@@ -366,7 +366,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     # DEBUG
-    "PAGE_SIZE": PAGE_SIZE,
+    "PAGE_SIZE": REST_FRAMEWORK_PAGE_SIZE,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
         # "rest_framework.authentication.SessionAuthentication",
