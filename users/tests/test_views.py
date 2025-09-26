@@ -54,7 +54,7 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
             "/auth/token/",
             {"username": self.user.username, "password": self.password},
         )
-        self.access_token = response.data["data"]["access"]
+        self.access_token = response.cookies["access_token"].value
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
 

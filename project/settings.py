@@ -319,6 +319,9 @@ JAZZMIN_UI_TWEAKS = {
 if os.getenv("CORS_ALLOWED_ORIGINS") != "None":
     CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS").split(",")
 
+# Allow credentials for HttpOnly cookies
+CORS_ALLOW_CREDENTIALS = True
+
 if os.getenv("CSRF_TRUSTED_ORIGINS") != "None":
     CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS").split(",")
 
@@ -384,6 +387,12 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
+    # Add cookie settings for additional security
+    "AUTH_COOKIE": "access_token",
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_SECURE": not DEBUG,  # Use secure cookies in production
+    "AUTH_COOKIE_SAMESITE": "Strict",
 }
 
 # Global datetime format
