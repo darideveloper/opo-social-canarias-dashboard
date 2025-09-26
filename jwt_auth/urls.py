@@ -17,6 +17,11 @@ urlpatterns = [
         name="token_refresh",
     ),
     path(
+        "logout/",
+        auth_views.LogoutView.as_view(),
+        name="logout",
+    ),
+    path(
         "activate/",
         auth_views.ActivateAccountView.as_view(),
         name="activate_account",

@@ -35,7 +35,7 @@ class CustomJWTViewTests(APITestCase):
     def test_token_obtain_pair(self):
         """
         Test that a token pair can be obtained with valid credentials
-        and that the custom response structure is returned.
+        and that the custom response structure is returned with HttpOnly cookies.
         """
         response = self.client.post(
             self.token_obtain_url,
@@ -48,12 +48,17 @@ class CustomJWTViewTests(APITestCase):
         self.assertIn("data", response.data)
         self.assertEqual(response.data["status"], "ok")
         self.assertEqual(response.data["message"], "generated")
-        self.assertIn("access", response.data["data"])
-        self.assertIn("refresh", response.data["data"])
+        
+        # Check that tokens are set as HttpOnly cookies
+        self.assertIn('access_token', response.cookies)
+        self.assertIn('refresh_token', response.cookies)
+        self.assertTrue(response.cookies['access_token'].value)
+        self.assertTrue(response.cookies['refresh_token'].value)
 
     def test_token_obtain_pair_invalid_credentials(self):
         """
-        Test that the API returns a 401 error for invalid credentials.
+        Test that the API returns a 401 error for invalid credentials
+        and that no cookies are set.
         """
         response = self.client.post(
             self.token_obtain_url,
@@ -62,23 +67,25 @@ class CustomJWTViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["status"], "error")
-        self.assertNotIn("access", response.data["data"])
-        self.assertNotIn("refresh", response.data["data"])
+        
+        # Check that no tokens are set as cookies for invalid credentials
+        self.assertNotIn('access_token', response.cookies)
+        self.assertNotIn('refresh_token', response.cookies)
 
     def test_token_refresh(self):
         """
         Test that an access token can be refreshed using a valid refresh token
-        and that the custom response structure is returned.
+        from cookies and that the custom response structure is returned.
         """
-        # Obtain token pair
+        # Obtain token pair (tokens will be set as cookies)
         token_response = self.client.post(
             self.token_obtain_url,
             {"username": self.username, "password": self.password},
         )
-        refresh_token = token_response.data["data"]["refresh"]
-
-        # Refresh the token
-        response = self.client.post(self.token_refresh_url, {"refresh": refresh_token})
+        self.assertEqual(token_response.status_code, status.HTTP_200_OK)
+        
+        # Refresh the token (using cookies from previous response)
+        response = self.client.post(self.token_refresh_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("status", response.data)
@@ -86,20 +93,32 @@ class CustomJWTViewTests(APITestCase):
         self.assertIn("data", response.data)
         self.assertEqual(response.data["status"], "ok")
         self.assertEqual(response.data["message"], "refreshed")
-        self.assertIn("access", response.data["data"])
+        
+        # Check that a new access token cookie is set
+        self.assertIn('access_token', response.cookies)
+        self.assertTrue(response.cookies['access_token'].value)
 
     def test_token_refresh_invalid_token(self):
         """
-        Test that the API returns a 401 error for an invalid refresh token.
+        Test that the API returns a 401 error for an invalid refresh token cookie.
         """
-        response = self.client.post(
-            self.token_refresh_url, {"refresh": "invalid_refresh_token"}
-        )
+        # Set an invalid refresh token cookie
+        self.client.cookies['refresh_token'] = 'invalid_refresh_token'
+        
+        response = self.client.post(self.token_refresh_url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["status"], "error")
-        self.assertNotIn("access", response.data["data"])
-        self.assertNotIn("refresh", response.data["data"])
+        
+    def test_token_refresh_missing_token(self):
+        """
+        Test that the API returns a 400 error when no refresh token cookie is present.
+        """
+        response = self.client.post(self.token_refresh_url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "refresh_token_missing")
 
 
 class RegisterBaseTestsCase(BaseTestApiViewsMethods):

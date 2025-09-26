@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from jwt_auth import serializers, models
 from utils import emails
@@ -14,18 +15,91 @@ from utils import emails
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
-    Custom token obtain pair
+    Custom token obtain pair with HttpOnly cookies
     """
 
     serializer_class = serializers.CustomTokenObtainPairSerializer
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the user and generate tokens
+        user = serializer.user
+        refresh = RefreshToken.for_user(user)
+        
+        # Create response
+        response_data = serializer.validated_data
+        response = Response(response_data, status=status.HTTP_200_OK)
+        
+        # Set HttpOnly cookies
+        response.set_cookie(
+            'access_token',
+            str(refresh.access_token),
+            httponly=True,
+            secure=not settings.DEBUG,  # Use secure cookies in production
+            samesite='Strict',
+            max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
+        )
+        response.set_cookie(
+            'refresh_token',
+            str(refresh),
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Strict',
+            max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
+        )
+        
+        return response
+
 
 class CustomTokenRefreshView(TokenRefreshView):
     """
-    Custom token refresh
+    Custom token refresh with HttpOnly cookies
     """
 
     serializer_class = serializers.CustomTokenRefreshSerializer
+
+    def post(self, request, *args, **kwargs):
+        # Get refresh token from cookie instead of request body
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response(
+                {"status": "error", "message": "refresh_token_missing", "data": {}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create serializer with token from cookie
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+        
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception:
+            # Handle invalid token gracefully
+            return Response(
+                {"status": "error", "message": "invalid_token", "data": {}},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Generate new tokens
+        refresh = RefreshToken(refresh_token)
+        new_access_token = refresh.access_token
+        
+        # Create response
+        response_data = serializer.validated_data
+        response = Response(response_data, status=status.HTTP_200_OK)
+        
+        # Set new access token cookie
+        response.set_cookie(
+            'access_token',
+            str(new_access_token),
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Strict',
+            max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
+        )
+        
+        return response
 
 
 class RegisterView(APIView):
@@ -197,3 +271,22 @@ class PasswordResetView(APIView):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class LogoutView(APIView):
+    """
+    Logout user by clearing HttpOnly cookies
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        response = Response(
+            {"status": "ok", "message": "logged_out", "data": {}},
+            status=status.HTTP_200_OK
+        )
+        
+        # Clear cookies
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        
+        return response

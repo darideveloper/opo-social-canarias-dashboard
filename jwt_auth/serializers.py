@@ -15,18 +15,18 @@ from jwt_auth import models
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
+        super().validate(attrs)
 
-        # Customize the response structure
-        return {"status": "ok", "message": "generated", "data": data}
+        # Don't return tokens in response - they'll be set as HttpOnly cookies
+        return {"status": "ok", "message": "generated", "data": {}}
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)  # Call the parent method to generate tokens
+        super().validate(attrs)  # Call the parent method to generate tokens
 
-        # Customize the response structure
-        return {"status": "ok", "message": "refreshed", "data": data}
+        # Don't return tokens in response - they'll be set as HttpOnly cookies
+        return {"status": "ok", "message": "refreshed", "data": {}}
 
 
 class RegisterSerializer(serializers.ModelSerializer):
