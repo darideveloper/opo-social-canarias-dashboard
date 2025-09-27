@@ -359,6 +359,45 @@ class RegisterUserTestCase(RegisterBaseTestsCase):
         # Validate user is not created
         users = User.objects.filter(email=self.data["email"])
         self.assertEqual(users.count(), 1)
+        
+    def test_create_user_with_existing_username(self):
+        """
+        Test that an error is received when a user with an existing username is created
+
+        Expects:
+            - An error is received when a user with an existing email is created
+            - The response is a 400 BAD REQUEST
+            - The error message is "User with this email already exists."
+            - The error message has the "email" field
+            - User is not duplicated
+        """
+
+        # Create a user with the same email
+        email = self.data["email"]
+        User.objects.create_user(
+            username=email,
+            password="testpassword",
+            # email=email, - email is not required for edge validation
+        )
+
+        # Submit data as multipart form (required for file uploads)
+        response = self.client.post(
+            self.endpoint,
+            self.data,
+            format="multipart",
+        )
+
+        # Validate user is not created
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Validate error message
+        self.assertEqual(response.data["status"], "error")
+        self.assertEqual(response.data["message"], "invalid_data")
+        self.assertIn("duplicated_email", str(response.data["data"]["email"]))
+
+        # Validate user is not created
+        users = User.objects.filter(username=self.data["email"])
+        self.assertEqual(users.count(), 1)
 
     def test_login_after_register(self):
         """
