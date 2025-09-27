@@ -38,7 +38,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             str(refresh.access_token),
             httponly=True,
             secure=not settings.DEBUG,  # Use secure cookies in production
-            samesite='Strict',
+            samesite='Lax',
             max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
         )
         response.set_cookie(
@@ -46,7 +46,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             str(refresh),
             httponly=True,
             secure=not settings.DEBUG,
-            samesite='Strict',
+            samesite='Lax',
             max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
         )
         
