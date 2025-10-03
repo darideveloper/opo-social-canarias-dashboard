@@ -23,33 +23,33 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Get the user and generate tokens
         user = serializer.user
         refresh = RefreshToken.for_user(user)
-        
+
         # Create response
         response_data = serializer.validated_data
         response = Response(response_data, status=status.HTTP_200_OK)
-        
+
         # Set HttpOnly cookies
         response.set_cookie(
-            'access_token',
+            "access_token",
             str(refresh.access_token),
             httponly=True,
             secure=not settings.DEBUG,  # Use secure cookies in production
-            samesite='Lax',
-            max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
+            samesite="Lax",
+            max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
         )
         response.set_cookie(
-            'refresh_token',
+            "refresh_token",
             str(refresh),
             httponly=True,
             secure=not settings.DEBUG,
-            samesite='Lax',
-            max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
+            samesite="Lax",
+            max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
         )
-        
+
         return response
 
 
@@ -62,43 +62,43 @@ class CustomTokenRefreshView(TokenRefreshView):
 
     def post(self, request, *args, **kwargs):
         # Get refresh token from cookie instead of request body
-        refresh_token = request.COOKIES.get('refresh_token')
+        refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return Response(
                 {"status": "error", "message": "refresh_token_missing", "data": {}},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         # Create serializer with token from cookie
-        serializer = self.get_serializer(data={'refresh': refresh_token})
-        
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+
         try:
             serializer.is_valid(raise_exception=True)
         except Exception:
             # Handle invalid token gracefully
             return Response(
                 {"status": "error", "message": "invalid_token", "data": {}},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_401_UNAUTHORIZED,
             )
-        
+
         # Generate new tokens
         refresh = RefreshToken(refresh_token)
         new_access_token = refresh.access_token
-        
+
         # Create response
         response_data = serializer.validated_data
         response = Response(response_data, status=status.HTTP_200_OK)
-        
+
         # Set new access token cookie
         response.set_cookie(
-            'access_token',
+            "access_token",
             str(new_access_token),
             httponly=True,
             secure=not settings.DEBUG,
-            samesite='Strict',
-            max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
+            samesite="Strict",
+            max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
         )
-        
+
         return response
 
 
@@ -277,16 +277,17 @@ class LogoutView(APIView):
     """
     Logout user by clearing HttpOnly cookies
     """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
         response = Response(
             {"status": "ok", "message": "logged_out", "data": {}},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
-        
+
         # Clear cookies
-        response.delete_cookie('access_token')
-        response.delete_cookie('refresh_token')
-        
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+
         return response
