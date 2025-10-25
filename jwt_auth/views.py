@@ -33,22 +33,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         response = Response(response_data, status=status.HTTP_200_OK)
 
         # Set HttpOnly cookies
-        response.set_cookie(
-            "access_token",
-            str(refresh.access_token),
-            httponly=True,
-            secure=not settings.DEBUG,  # Use secure cookies in production
-            samesite="Lax",
-            max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
-        )
-        response.set_cookie(
-            "refresh_token",
-            str(refresh),
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite="Lax",
-            max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
-        )
+        cookie_kwargs = {
+            "httponly": True,
+            "secure": not settings.DEBUG,  # Use secure cookies in production
+            "samesite": "Lax",
+            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
+        }
+        if settings.COOKIE_DOMAIN:
+            cookie_kwargs["domain"] = settings.COOKIE_DOMAIN
+            
+        response.set_cookie("access_token", str(refresh.access_token), **cookie_kwargs)
+        response.set_cookie("refresh_token", str(refresh), **cookie_kwargs)
 
         return response
 
@@ -90,14 +85,16 @@ class CustomTokenRefreshView(TokenRefreshView):
         response = Response(response_data, status=status.HTTP_200_OK)
 
         # Set new access token cookie
-        response.set_cookie(
-            "access_token",
-            str(new_access_token),
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite="Strict",
-            max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
-        )
+        cookie_kwargs = {
+            "httponly": True,
+            "secure": not settings.DEBUG,
+            "samesite": "Strict",
+            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds(),
+        }
+        if settings.COOKIE_DOMAIN:
+            cookie_kwargs["domain"] = settings.COOKIE_DOMAIN
+            
+        response.set_cookie("access_token", str(new_access_token), **cookie_kwargs)
 
         return response
 
@@ -287,7 +284,11 @@ class LogoutView(APIView):
         )
 
         # Clear cookies
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
+        delete_kwargs = {}
+        if settings.COOKIE_DOMAIN:
+            delete_kwargs["domain"] = settings.COOKIE_DOMAIN
+            
+        response.delete_cookie("access_token", **delete_kwargs)
+        response.delete_cookie("refresh_token", **delete_kwargs)
 
         return response

@@ -37,6 +37,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL")
 CUSTOM_TOKENS_LIFETIME_HOURS = float(os.getenv("CUSTOM_TOKENS_LIFETIME_HOURS"))
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 
 print(f"DEBUG: {DEBUG}")
 print(f"AWS_STORAGE: {AWS_STORAGE}")
@@ -326,6 +327,17 @@ if os.getenv("CSRF_TRUSTED_ORIGINS") != "None":
     CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS").split(",")
 
 
+# Cookie domain configuration for subdomain sharing
+SESSION_COOKIE_DOMAIN = COOKIE_DOMAIN
+CSRF_COOKIE_DOMAIN = COOKIE_DOMAIN
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+
 # Storage settings
 if AWS_STORAGE:
     # aws settings
@@ -392,7 +404,6 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_REFRESH": "refresh_token",
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_SECURE": not DEBUG,  # Use secure cookies in production
-    "AUTH_COOKIE_SAMESITE": "Strict",
 }
 
 # Global datetime format
