@@ -39,6 +39,7 @@ def render_email(
         "key_items": key_items,
         "extra_image": extra_image,
         "SITE_BRAND": settings.SITE_BRAND,
+        "EMAIL_SUPPORT": settings.EMAIL_SUPPORT,
     }
 
     html_message = render_to_string("users/base_email.html", context)

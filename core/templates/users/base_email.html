@@ -407,14 +407,14 @@
         <div class="content">
 
           <!-- START CENTERED WHITE CONTAINER -->
-          <span class="preheader">You have a new message from NyxTrackers</span>
+          <span class="preheader">You have a new message from {{SITE_BRAND}}</span>
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main">
 
             <!-- START MAIN CONTENT AREA -->
             <tr>
               <td class="wrapper">
-                <img src="cid:logo"
-                  alt="{{ SITE_BRAND|default:'NyxTrackers' }} logo" class="banner" />
+                <img src="cid:banner"
+                  alt="{{ SITE_BRAND }} banner" class="banner" />
                 <h1>Hi {{name}}</h1>
 
                 {% for text in texts %}
@@ -463,8 +463,8 @@
                 </table>
 
                 <p>If you have any questions, write to us at <a
-                    href="mailto:support@nyxtrackers.com">support@nyxtrackers.com</a></p>
-                <p>Thanks, NyxTrackers Team</p>
+                    href="mailto:{{EMAIL_SUPPORT}}">{{EMAIL_SUPPORT}}</a></p>
+                <p>Thanks, {{SITE_BRAND}} Team</p>
                 <small>
                   if the button doesn't work, click in the link:
                   <a href="{{cta_link}}" target="_blank">{{cta_link}}</a>
@@ -487,7 +487,7 @@
               </tr>
               <tr>
                 <td class="content-block powered-by">
-                  © 2024 <a href="https://www.nyxtrackers.com/">{{ SITE_BRAND|default:'NyxTrackers' }}</a> All rights reserved.
+                  © 2024 <a href="{{FRONTEND_URL}}">{{ SITE_BRAND }}</a> All rights reserved.
                 </td>
               </tr>
               <tr>
