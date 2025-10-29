@@ -89,8 +89,9 @@ def send_email(
     try:
         
         # Direct path to the logo file
+        image_name = 'banner.webp'
         logo_file_path = os.path.join(
-            settings.BASE_DIR, 'core', 'static', 'core', 'imgs', 'banner.png'
+            settings.BASE_DIR, 'core', 'static', 'core', 'imgs', image_name
         )
         
         if os.path.exists(logo_file_path):
@@ -100,7 +101,7 @@ def send_email(
             # Create MIME image with proper headers
             logo = MIMEImage(logo_data)
             logo.add_header('Content-ID', '<logo>')
-            logo.add_header('Content-Disposition', 'inline', filename='banner.png')
+            logo.add_header('Content-Disposition', 'inline', filename=image_name)
             
             message.attach(logo)
             logo_attached = True
