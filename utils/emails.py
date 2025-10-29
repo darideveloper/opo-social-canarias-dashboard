@@ -89,7 +89,7 @@ def send_email(
         
         # Direct path to the logo file
         logo_file_path = os.path.join(
-            settings.BASE_DIR, 'core', 'static', 'core', 'imgs', 'logo.webp'
+            settings.BASE_DIR, 'core', 'static', 'core', 'imgs', 'banner.png'
         )
         
         if os.path.exists(logo_file_path):
@@ -99,12 +99,12 @@ def send_email(
             # Create MIME image with proper headers
             logo = MIMEImage(logo_data)
             logo.add_header('Content-ID', '<logo>')
-            logo.add_header('Content-Disposition', 'inline', filename='logo.webp')
+            logo.add_header('Content-Disposition', 'inline', filename='banner.png')
             
             message.attach(logo)
             logo_attached = True
             
-    except Exception as e:
+    except Exception:
         import traceback
         traceback.print_exc()
     
