@@ -132,7 +132,7 @@ class RegisterView(APIView):
                     "Your account has been created successfully.",
                     "Just one more step to start using it.",
                 ],
-                cta_link=f"{settings.FRONTEND_URL}/auth/activate/{id_token}/",
+                cta_link=f"{settings.FRONTEND_URL}/activate/{id_token}/",
                 cta_text="Activate Now",
                 to_email=serializer.validated_data["email"],
             )
