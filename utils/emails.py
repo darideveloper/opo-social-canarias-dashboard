@@ -100,7 +100,7 @@ def send_email(
             
             # Create MIME image with proper headers
             logo = MIMEImage(logo_data)
-            logo.add_header('Content-ID', '<logo>')
+            logo.add_header('Content-ID', '<banner>')
             logo.add_header('Content-Disposition', 'inline', filename=image_name)
             
             message.attach(logo)
