@@ -268,6 +268,27 @@ class UserMeViewTestsCase(BaseTestApiViewsMethods):
         self.assertTrue(data["profile_img"].startswith("http"))
         self.assertTrue(data["profile_img"].endswith(".png"))
         self.assertIn("avatar", data["profile_img"])
+        
+    def test_get_user_profile_no_avatar(self):
+        """
+        Test get user profile no avatar
+        Expects:
+            - The response is a 200 OK
+            - The status is ok
+            - The message is user_profile
+            - The profile image is None
+        """
+        
+        # Delete avatar
+        self.profile.profile_img.delete()
+        self.profile.save()
+
+        response = self.client.get(self.endpoint)
+        data = response.data["data"]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "ok")
+        self.assertEqual(response.data["message"], "user_profile")
+        self.assertIsNone(data["profile_img"])
 
     def test_put_user_profile(self):
         """

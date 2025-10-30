@@ -40,7 +40,11 @@ class UserMeView(APIView):
                 "data": {
                     "name": profile.name,
                     "email": user.email,
-                    "profile_img": get_media_url(profile.profile_img),
+                    "profile_img": (
+                        get_media_url(profile.profile_img)
+                        if profile.profile_img
+                        else None
+                    ),
                 },
             },
             status=status.HTTP_200_OK,
