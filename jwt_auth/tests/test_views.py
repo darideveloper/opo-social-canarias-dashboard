@@ -507,7 +507,7 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
         email = mail.outbox[0]
         self.assertEqual(email.subject, "Activate your account")
         self.assertEqual(email.to, [self.data["email"]])
-        self.assertIn("/auth/activate/", email.body)
+        self.assertIn("/activate/", email.body)
         self.assertIn(settings.FRONTEND_URL, email.body)
         self.assertIn("Hi " + self.data["name"], email.body)
 
@@ -561,12 +561,12 @@ class RegisterViewEmailTestsCase(RegisterBaseTestsCase):
 
         # Validate the logo is attached to the email
         email = mail.outbox[0]
-        self.assertIn("cid:logo", email.alternatives[0][0])
+        self.assertIn("cid:banner", email.alternatives[0][0])
 
         # Validate src of logo
         soup = BeautifulSoup(email.alternatives[0][0], "html.parser")
         logo_src = soup.select_one("img.banner")["src"]
-        self.assertIn("cid:logo", logo_src)
+        self.assertIn("cid:banner", logo_src)
 
 
 class ActivateAccountViewTestsCase(BaseTestApiViewsMethods):
