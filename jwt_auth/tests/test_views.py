@@ -831,7 +831,7 @@ class ResetPasswordViewTestsCase(BaseTestApiViewsMethods):
         ).token
         soup = BeautifulSoup(mails[0].alternatives[0][0], "html.parser")
         recover_link = soup.select_one("a.cta")["href"]
-        self.assertIn("/auth/reset/", recover_link)
+        self.assertIn("/reset-password/", recover_link)
         self.assertIn(recover_token, recover_link)
         self.assertIn(settings.FRONTEND_URL, recover_link)
 

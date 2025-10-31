@@ -220,7 +220,7 @@ class PasswordResetView(APIView):
                 subject="Recover your password",
                 name=profile.name,
                 texts=["Please click the link below to recover your password."],
-                cta_link=f"{settings.FRONTEND_URL}/auth/reset/{id_token}/",
+                cta_link=f"{settings.FRONTEND_URL}/reset-password/{id_token}/",
                 cta_text="Recover Now",
                 to_email=serializer.validated_data["email"],
             )
